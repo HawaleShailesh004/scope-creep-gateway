@@ -32,46 +32,55 @@
     "slash_commands": [
       {
         "command": "/setup-brief",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Define the project brief and create a scope canvas",
         "should_escape": false
       },
       {
         "command": "/change-order",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Manually create a change order for this project",
         "should_escape": false
       },
       {
         "command": "/absorbed",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Summary of absorbed (let-it-slide) work",
         "should_escape": false
       },
       {
         "command": "/client-report",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Client-level scope pattern stats",
         "should_escape": false
       },
       {
         "command": "/scope-gateway-off",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Pause scope classification in this channel",
         "should_escape": false
       },
       {
         "command": "/scope-gateway-on",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Resume scope classification in this channel",
         "should_escape": false
       },
       {
         "command": "/update-brief",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Edit deliverables, budget, and deadline",
         "should_escape": false
       },
       {
         "command": "/studio-report",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Studio-level scope, capacity, and billing summary",
         "should_escape": false
       },
       {
         "command": "/import-brief",
+        "url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
         "description": "Import scope from a SOW or brief document",
         "should_escape": false
       }
@@ -83,7 +92,7 @@
   },
   "oauth_config": {
     "redirect_urls": [
-      "https://ngrok-free.app/slack/oauth_redirect",
+      "https://scope-creep-gateway-production.up.railway.app/slack/oauth_redirect",
       "http://localhost:3899/oauth/callback"
     ],
     "scopes": {
@@ -132,7 +141,7 @@
   },
   "settings": {
     "event_subscriptions": {
-      "request_url": "https://ngrok-free.app/slack/events",
+      "request_url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
       "bot_events": [
         "app_home_opened",
         "app_mention",
@@ -144,10 +153,10 @@
     },
     "interactivity": {
       "is_enabled": true,
-      "request_url": "https://ngrok-free.app/slack/events"
+      "request_url": "https://scope-creep-gateway-production.up.railway.app/slack/events"
     },
     "org_deploy_enabled": true,
-    "socket_mode_enabled": true,
+    "socket_mode_enabled": false,
     "token_rotation_enabled": false,
     "is_mcp_enabled": true
   }

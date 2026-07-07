@@ -24,14 +24,15 @@ def _channel_has_project(channel_id: str) -> bool:
     return bool(existing.data)
 
 
-async def handle_import_brief_command(
-    ack,
+async def handle_import_brief_ack(ack):
+    await ack()
+
+
+async def handle_import_brief_launcher(
     body: dict,
     client: AsyncWebClient,
     logger: logging.Logger,
 ):
-    await ack()
-
     channel_id = body.get("channel_id")
     user_id = body["user_id"]
     team_id = body.get("team_id")
@@ -67,4 +68,7 @@ async def handle_import_brief_command(
 
 
 def register(app: AsyncApp):
-    app.command("/import-brief")(handle_import_brief_command)
+    app.command("/import-brief")(
+        ack=handle_import_brief_ack,
+        lazy=[handle_import_brief_launcher],
+    )

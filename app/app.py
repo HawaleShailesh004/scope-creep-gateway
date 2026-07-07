@@ -11,11 +11,23 @@ from services.retention import purge_expired_text
 
 load_dotenv(dotenv_path=".env", override=False)
 
-logging.basicConfig(level=logging.DEBUG)
-
-logger = logging.getLogger(__name__)
-
 RETENTION_INTERVAL_SECONDS = 6 * 60 * 60
+RAILWAY_SLACK_EVENTS_URL = (
+    "https://scope-creep-gateway-production.up.railway.app/slack/events"
+)
+
+
+def _configure_logging() -> logging.Logger:
+    level_name = os.environ.get("LOG_LEVEL", "").strip().upper()
+    if not level_name:
+        # Railway sets PORT; default to INFO there to avoid log rate limits.
+        level_name = "INFO" if os.environ.get("PORT") else "DEBUG"
+    level = getattr(logging, level_name, logging.INFO)
+    logging.basicConfig(level=level)
+    return logging.getLogger(__name__)
+
+
+logger = _configure_logging()
 
 
 def _transport() -> str:
@@ -46,11 +58,12 @@ def _build_app() -> AsyncApp:
         kwargs["signing_secret"] = signing_secret
         # Slash commands and interactivity must ack in the HTTP response body.
         kwargs["process_before_response"] = True
-    return AsyncApp(**kwargs)
+    app = AsyncApp(**kwargs)
+    register_listeners(app)
+    return app
 
 
 app = _build_app()
-register_listeners(app)
 
 
 async def _retention_loop():
@@ -75,7 +88,7 @@ async def _start_socket_mode():
     app_token = os.environ.get("SLACK_APP_TOKEN", "").strip()
     if not app_token:
         raise RuntimeError("SLACK_APP_TOKEN is required when SLACK_TRANSPORT=socket")
-    await _purge_on_startup()
+    asyncio.create_task(_purge_on_startup())
     asyncio.create_task(_retention_loop())
     handler = AsyncSocketModeHandler(app, app_token)
     await handler.start_async()
@@ -94,19 +107,12 @@ async def _start_http():
     async def slack_events(request: web.Request) -> web.Response:
         bolt_req = await to_bolt_request(request)
         bolt_resp = await app.async_dispatch(bolt_req)
+        if bolt_resp is None:
+            logger.warning("slack_dispatch_returned_none path=%s", slack_path)
+            return web.Response(status=200, text="")
         return await to_aiohttp_response(bolt_resp)
 
-    async def on_startup(_app: web.Application):
-        await _purge_on_startup()
-        asyncio.create_task(_retention_loop())
-        logger.info(
-            "Scope Creep Gateway listening on 0.0.0.0:%s (HTTP) path=%s",
-            port,
-            slack_path,
-        )
-
     http_app = web.Application()
-    http_app.on_startup.append(on_startup)
     http_app.add_routes(
         [
             web.get("/health", health),
@@ -117,11 +123,22 @@ async def _start_http():
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
+    logger.info(
+        "Scope Creep Gateway listening on 0.0.0.0:%s (HTTP) path=%s "
+        "process_before_response=%s expected_slack_url=%s",
+        port,
+        slack_path,
+        app.process_before_response,
+        RAILWAY_SLACK_EVENTS_URL,
+    )
+    asyncio.create_task(_purge_on_startup())
+    asyncio.create_task(_retention_loop())
     await asyncio.Event().wait()
 
 
 async def main():
     transport = _transport()
+    logger.info("starting transport=%s", transport)
     if transport == "http":
         await _start_http()
     elif transport == "socket":
