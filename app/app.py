@@ -44,6 +44,8 @@ def _build_app() -> AsyncApp:
                 "SLACK_SIGNING_SECRET is required when SLACK_TRANSPORT=http"
             )
         kwargs["signing_secret"] = signing_secret
+        # Slash commands and interactivity must ack in the HTTP response body.
+        kwargs["process_before_response"] = True
     return AsyncApp(**kwargs)
 
 

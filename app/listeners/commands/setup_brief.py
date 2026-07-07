@@ -160,47 +160,59 @@ def _save_project_brief(
     return project_id
 
 
-async def handle_setup_brief_command(
-    ack,
+async def handle_setup_brief_ack(ack):
+    await ack()
+
+
+async def handle_setup_brief_launcher(
     body: dict,
     client: AsyncWebClient,
     logger: logging.Logger,
 ):
-    await ack()
-
     channel_id = body.get("channel_id")
     user_id = body["user_id"]
+    team_id = body.get("team_id") or (body.get("team") or {}).get("id")
     if not channel_id:
         logger.warning("setup-brief invoked outside a channel")
         return
+    if not team_id:
+        logger.warning("setup-brief missing team_id")
+        return
 
-    if await asyncio.to_thread(_channel_has_project, channel_id):
+    try:
+        if await asyncio.to_thread(_channel_has_project, channel_id):
+            await client.chat_postEphemeral(
+                channel=channel_id,
+                user=user_id,
+                text=BRIEF_ALREADY_EXISTS,
+            )
+            return
+
+        if is_locked(LockKeys.setup(channel_id)):
+            await client.chat_postEphemeral(
+                channel=channel_id,
+                user=user_id,
+                text=SETUP_IN_PROGRESS,
+            )
+            return
+
+        # Post a launcher button so the button click provides a fresh trigger_id.
         await client.chat_postEphemeral(
             channel=channel_id,
             user=user_id,
-            text=BRIEF_ALREADY_EXISTS,
+            text=f"{SETUP_LAUNCHER_INTRO}\n\n_{SETUP_FREELANCER_ONLY_HINT}_",
+            blocks=build_setup_brief_launcher_blocks(
+                channel_id=channel_id,
+                team_id=team_id,
+            ),
         )
-        return
-
-    if is_locked(LockKeys.setup(channel_id)):
-        await client.chat_postEphemeral(
-            channel=channel_id,
-            user=user_id,
-            text=SETUP_IN_PROGRESS,
+    except SlackApiError as exc:
+        logger.exception(
+            "setup-brief launcher ephemeral failed: %s",
+            exc.response.get("error"),
         )
-        return
-
-    # Slash-command trigger_ids often expire before Socket Mode delivers the event.
-    # Post a launcher button so the user click provides a fresh trigger_id.
-    await client.chat_postEphemeral(
-        channel=channel_id,
-        user=user_id,
-        text=f"{SETUP_LAUNCHER_INTRO}\n\n_{SETUP_FREELANCER_ONLY_HINT}_",
-        blocks=build_setup_brief_launcher_blocks(
-            channel_id=channel_id,
-            team_id=body["team_id"],
-        ),
-    )
+    except Exception:
+        logger.exception("setup-brief launcher failed")
 
 
 async def handle_setup_brief_submission(
@@ -390,5 +402,8 @@ async def handle_setup_brief_submission(
 
 
 def register(app: AsyncApp):
-    app.command("/setup-brief")(handle_setup_brief_command)
+    app.command("/setup-brief")(
+        ack=handle_setup_brief_ack,
+        lazy=[handle_setup_brief_launcher],
+    )
     app.view(CALLBACK_ID)(handle_setup_brief_submission)
