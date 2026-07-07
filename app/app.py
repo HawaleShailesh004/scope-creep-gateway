@@ -19,7 +19,13 @@ RETENTION_INTERVAL_SECONDS = 6 * 60 * 60
 
 
 def _transport() -> str:
-    return os.environ.get("SLACK_TRANSPORT", "socket").strip().lower()
+    explicit = os.environ.get("SLACK_TRANSPORT", "").strip().lower()
+    if explicit:
+        return explicit
+    # Railway and most PaaS set PORT; use HTTP automatically in that case.
+    if os.environ.get("PORT"):
+        return "http"
+    return "socket"
 
 
 def _build_app() -> AsyncApp:
