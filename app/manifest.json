@@ -1,0 +1,154 @@
+{
+  "display_information": {
+    "name": "Scope Creep Gateway",
+    "description": "Catch scope creep the moment it happens - and get paid for the extra work.",
+    "background_color": "#000000",
+    "long_description": "Scope creep quietly costs freelancers thousands every year - one \"can you also just…\" at a time.\r\n\r\nScope Creep Gateway is your scope guardian inside Slack. It watches your client project channels, compares every request against the brief you agreed on, and quietly flags out-of-scope asks the moment they land - privately, so only you see them.\r\n\r\nYou stay in control of every call:\r\n\r\nLet small asks slide - and it keeps a running tally of the goodwill you've given, so you know when a client's \"quick favors\" have added up.\r\n\r\nBill the real ones - one tap drafts a professional change order with cost and timeline, ready to send.\r\n\r\nKnow your clients - see which clients creep most across all your projects, so you can price and plan accordingly.\r\n\r\nEverything sensitive stays private to you. The app discloses its presence openly in each channel, never shares your conversations, and never uses your data to train AI - so your client relationships stay built on trust, not surveillance.\r\n\r\nStop doing free work you never agreed to. Start every project with a guardian watching your scope."
+  },
+  "features": {
+    "app_home": {
+      "home_tab_enabled": true,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": false
+    },
+    "bot_user": {
+      "display_name": "Scope Creep Gateway",
+      "always_online": true
+    },
+    "shortcuts": [
+      {
+        "name": "Flag as scope change",
+        "type": "message",
+        "callback_id": "flag_scope_change",
+        "description": "Flag this message and draft a change order"
+      },
+      {
+        "name": "Import brief from document",
+        "type": "message",
+        "callback_id": "import_brief",
+        "description": "Extract scope from a SOW or brief document"
+      }
+    ],
+    "slash_commands": [
+      {
+        "command": "/setup-brief",
+        "description": "Define the project brief and create a scope canvas",
+        "should_escape": false
+      },
+      {
+        "command": "/change-order",
+        "description": "Manually create a change order for this project",
+        "should_escape": false
+      },
+      {
+        "command": "/absorbed",
+        "description": "Summary of absorbed (let-it-slide) work",
+        "should_escape": false
+      },
+      {
+        "command": "/client-report",
+        "description": "Client-level scope pattern stats",
+        "should_escape": false
+      },
+      {
+        "command": "/scope-gateway-off",
+        "description": "Pause scope classification in this channel",
+        "should_escape": false
+      },
+      {
+        "command": "/scope-gateway-on",
+        "description": "Resume scope classification in this channel",
+        "should_escape": false
+      },
+      {
+        "command": "/update-brief",
+        "description": "Edit deliverables, budget, and deadline",
+        "should_escape": false
+      },
+      {
+        "command": "/studio-report",
+        "description": "Studio-level scope, capacity, and billing summary",
+        "should_escape": false
+      },
+      {
+        "command": "/import-brief",
+        "description": "Import scope from a SOW or brief document",
+        "should_escape": false
+      }
+    ],
+    "agent_view": {
+      "agent_description": "A Slack agent that helps freelancers catch scope creep early.",
+      "suggested_prompts": []
+    }
+  },
+  "oauth_config": {
+    "redirect_urls": [
+      "https://ngrok-free.app/slack/oauth_redirect",
+      "http://localhost:3899/oauth/callback"
+    ],
+    "scopes": {
+      "user": [
+        "search:read",
+        "channels:history",
+        "channels:read",
+        "groups:history",
+        "groups:read",
+        "im:history",
+        "mpim:history",
+        "users:read",
+        "search:read.public",
+        "search:read.private",
+        "search:read.mpim",
+        "search:read.im",
+        "search:read.files",
+        "search:read.users",
+        "chat:write",
+        "canvases:read",
+        "canvases:write",
+        "users:read.email"
+      ],
+      "bot": [
+        "app_mentions:read",
+        "channels:history",
+        "channels:read",
+        "files:read",
+        "chat:write",
+        "commands",
+        "channels:join",
+        "channels:manage",
+        "groups:history",
+        "groups:read",
+        "im:history",
+        "im:read",
+        "im:write",
+        "mpim:read",
+        "reactions:write",
+        "reactions:read",
+        "users:read",
+        "assistant:write"
+      ]
+    },
+    "pkce_enabled": false
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://ngrok-free.app/slack/events",
+      "bot_events": [
+        "app_home_opened",
+        "app_mention",
+        "member_joined_channel",
+        "message.channels",
+        "message.groups",
+        "message.im"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true,
+      "request_url": "https://ngrok-free.app/slack/events"
+    },
+    "org_deploy_enabled": true,
+    "socket_mode_enabled": true,
+    "token_rotation_enabled": false,
+    "is_mcp_enabled": true
+  }
+}
