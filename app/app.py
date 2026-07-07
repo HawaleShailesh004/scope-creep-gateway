@@ -81,25 +81,34 @@ async def _start_socket_mode():
 
 async def _start_http():
     from aiohttp import web
-    from slack_bolt.adapter.aiohttp.async_handler import AsyncSlackRequestHandler
+    from slack_bolt.adapter.aiohttp import to_aiohttp_response, to_bolt_request
 
     port = int(os.environ.get("PORT", "3000"))
-    handler = AsyncSlackRequestHandler(app)
+    slack_path = os.environ.get("SLACK_EVENTS_PATH", "/slack/events")
 
     async def health(_request: web.Request) -> web.Response:
         return web.Response(text="ok")
 
+    async def slack_events(request: web.Request) -> web.Response:
+        bolt_req = await to_bolt_request(request)
+        bolt_resp = await app.async_dispatch(bolt_req)
+        return await to_aiohttp_response(bolt_resp)
+
     async def on_startup(_app: web.Application):
         await _purge_on_startup()
         asyncio.create_task(_retention_loop())
-        logger.info("Scope Creep Gateway listening on 0.0.0.0:%s (HTTP)", port)
+        logger.info(
+            "Scope Creep Gateway listening on 0.0.0.0:%s (HTTP) path=%s",
+            port,
+            slack_path,
+        )
 
     http_app = web.Application()
     http_app.on_startup.append(on_startup)
     http_app.add_routes(
         [
             web.get("/health", health),
-            web.post("/slack/events", handler.handle),
+            web.post(slack_path, slack_events),
         ]
     )
     runner = web.AppRunner(http_app)

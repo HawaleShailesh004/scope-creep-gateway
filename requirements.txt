@@ -1,1 +1,1 @@
--r app/requirements-deploy.txt
+-r app/requirements.txt
