@@ -1,0 +1,53 @@
+# Build
+.bolt-python-build/
+build/
+dist/
+
+# Claude Code (local only)
+.claude/
+
+# Environment & secrets
+.env
+.env.*
+!.env.sample
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+env*/
+
+# Logs & coverage
+logs/
+*.log
+.coverage
+coverage.xml
+
+# Editors & OS
+.idea/
+.vscode/
+.DS_Store
+
+# Git
+.worktrees/
+
+# Slack local config (contains tokens)
+**/.slack/apps.json
+**/.slack/apps.dev.json
+
+# Local-only dev scripts (oauth tokens, seed helpers)
+app/scripts/
+
+# OAuth install state
+app/data/
+
+# Removed starter templates (not part of this product)
+openai-agents-sdk/
+pydantic-ai/
+claude-agent-sdk/
