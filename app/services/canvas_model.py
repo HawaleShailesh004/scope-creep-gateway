@@ -8,7 +8,11 @@ from services.deliverables import load_exclusions
 from services.deliverables import load_effective_deliverables, sync_paid_change_orders_to_deliverables
 from services.scope_canvas import CanvasModel, ChangeLogEntry, Deliverable, build_full_canvas_markdown
 from services.scope_health import AbsorbedLike, HealthResult, compute_scope_health
-from services.change_orders import _to_change_order_likes
+from services.change_orders import (
+    _to_change_order_likes,
+    list_absorbed_items,
+    list_project_change_orders,
+)
 
 
 def _format_when(raw: str | None) -> str:
