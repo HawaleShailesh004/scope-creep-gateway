@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import os
 
-import anthropic
+from groq import Groq
 
 from services.brief_template import format_budget
+from services.drafter_prompts import REPLY_PROMPT_VERSIONS
 
-_client: anthropic.Anthropic | None = None
+_client: Groq | None = None
+
+DRAFTER_MODEL = "llama-3.3-70b-versatile"
+REPLY_SYSTEM = REPLY_PROMPT_VERSIONS["v3"]
 
 TONE_GUIDANCE = {
     "warm": (
@@ -24,13 +28,13 @@ TONE_GUIDANCE = {
 }
 
 
-def _get_client() -> anthropic.Anthropic:
+def _get_client() -> Groq:
     global _client
     if _client is None:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
-            raise RuntimeError("ANTHROPIC_API_KEY must be set in .env")
-        _client = anthropic.Anthropic(api_key=api_key)
+            raise RuntimeError("GROQ_API_KEY must be set in .env")
+        _client = Groq(api_key=api_key)
     return _client
 
 
@@ -80,10 +84,13 @@ Do not mention AI, bots, or Scope Creep Gateway.
 Use {currency} when citing money.
 Return only the message text, no quotes or labels."""
 
-    resp = _get_client().messages.create(
-        model="claude-sonnet-4-6",
+    resp = _get_client().chat.completions.create(
+        model=DRAFTER_MODEL,
         max_tokens=350,
         temperature=0.4,
-        messages=[{"role": "user", "content": user}],
+        messages=[
+            {"role": "system", "content": REPLY_SYSTEM},
+            {"role": "user", "content": user},
+        ],
     )
-    return resp.content[0].text.strip()
+    return (resp.choices[0].message.content or "").strip()

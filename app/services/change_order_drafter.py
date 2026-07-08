@@ -3,31 +3,24 @@ from __future__ import annotations
 import json
 import os
 
-import anthropic
+from groq import Groq
 
 from services.brief_template import format_budget
+from services.drafter_prompts import CHANGE_ORDER_PROMPT_VERSIONS
 
-_client: anthropic.Anthropic | None = None
+_client: Groq | None = None
 
-SYSTEM = """You draft change orders for freelance projects.
-Given the project brief and an out-of-scope client request, propose:
-- task_description: 1-2 sentences for the client-facing change order
-- estimated_cost: numeric amount in the project's currency (reasonable vs budget)
-- timeline_impact_days: integer days added to the timeline
-
-Return ONLY strict JSON:
-{"task_description": "...",
- "estimated_cost": 8000,
- "timeline_impact_days": 3}"""
+DRAFTER_MODEL = "llama-3.3-70b-versatile"
+SYSTEM = CHANGE_ORDER_PROMPT_VERSIONS["v3"]
 
 
-def _get_client() -> anthropic.Anthropic:
+def _get_client() -> Groq:
     global _client
     if _client is None:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
-            raise RuntimeError("ANTHROPIC_API_KEY must be set in .env")
-        _client = anthropic.Anthropic(api_key=api_key)
+            raise RuntimeError("GROQ_API_KEY must be set in .env")
+        _client = Groq(api_key=api_key)
     return _client
 
 
@@ -62,13 +55,19 @@ REMAINING BUDGET HEADROOM: {format_budget(remaining, currency) if remaining is n
 
 Draft the change order."""
 
-    resp = _get_client().messages.create(
-        model="claude-sonnet-4-6",
+    resp = _get_client().chat.completions.create(
+        model=DRAFTER_MODEL,
         max_tokens=400,
         temperature=0,
-        system=SYSTEM,
-        messages=[{"role": "user", "content": user}],
+        messages=[
+            {"role": "system", "content": SYSTEM},
+            {"role": "user", "content": user},
+        ],
     )
-    text = resp.content[0].text.strip()
+    text = (resp.choices[0].message.content or "").strip()
     text = text.replace("```json", "").replace("```", "").strip()
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1:
+        text = text[start : end + 1]
     return json.loads(text)
