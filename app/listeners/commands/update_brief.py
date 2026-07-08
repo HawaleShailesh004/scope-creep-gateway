@@ -7,7 +7,7 @@ from slack_bolt.async_app import AsyncApp
 from slack_sdk.web.async_client import AsyncWebClient
 
 from listeners.views.update_brief_launcher import build_update_brief_launcher_blocks
-from services.project_context import load_project_by_channel
+from services.projects import load_project_by_channel
 from services.user_messages import UPDATE_BRIEF_LAUNCHER_INTRO, UPDATE_BRIEF_NO_PROJECT
 
 logger = logging.getLogger(__name__)

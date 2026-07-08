@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from db.supabase_client import get_supabase
+from db.supabase_client import get_supabase, run_query
 
 
 def is_analysis_allowed(project: dict[str, Any]) -> bool:
@@ -29,12 +29,10 @@ def set_classification_enabled(project_id: str, enabled: bool) -> None:
 
 
 def load_project_by_channel(channel_id: str) -> dict | None:
-    supabase = get_supabase()
-    result = (
-        supabase.table("projects")
+    result = run_query(
+        lambda sb: sb.table("projects")
         .select("*")
         .eq("slack_channel_id", channel_id)
         .limit(1)
-        .execute()
     )
     return result.data[0] if result.data else None

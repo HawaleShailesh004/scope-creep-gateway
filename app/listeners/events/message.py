@@ -51,26 +51,29 @@ async def handle_message(
             load_project_by_channel, channel_id
         )
         if not project_context:
-            logger.debug("scope_classifier_skip no_project channel=%s", channel_id)
+            logger.info("scope_classifier_skip no_project channel=%s", channel_id)
             return
 
         project = project_context["project"]
         if not is_analysis_allowed(project):
-            logger.debug(
-                "scope_classifier_skip disclosure_or_disabled project=%s",
+            logger.info(
+                "scope_classifier_skip disclosure_or_disabled project=%s "
+                "disclosure_ts=%s classification_enabled=%s",
                 project.get("project_name"),
+                project.get("disclosure_ts"),
+                project.get("classification_enabled"),
             )
             return
 
         if user_id == project.get("freelancer_slack_id"):
-            logger.debug(
+            logger.info(
                 "scope_classifier_skip freelancer user=%s project=%s",
                 user_id,
                 project.get("project_name"),
             )
             return
         if user_id != project.get("client_slack_id"):
-            logger.debug(
+            logger.info(
                 "scope_classifier_skip not_client user=%s expected_client=%s",
                 user_id,
                 project.get("client_slack_id"),
