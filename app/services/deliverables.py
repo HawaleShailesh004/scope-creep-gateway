@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from db.supabase_client import get_supabase
+from db.supabase_client import get_supabase, run_query
 
 _GENERIC_TOKENS = frozenset(
     {
@@ -46,12 +46,8 @@ def _normalize_description(text: str) -> str:
 
 def load_effective_deliverables(project_id: str) -> list[dict]:
     """All deliverable rows including exclusions (stored with origin=exclusion)."""
-    supabase = get_supabase()
-    result = (
-        supabase.table("deliverables")
-        .select("*")
-        .eq("project_id", project_id)
-        .execute()
+    result = run_query(
+        lambda sb: sb.table("deliverables").select("*").eq("project_id", project_id)
     )
     return result.data or []
 
@@ -163,14 +159,13 @@ def ensure_deliverable_for_paid_order(change_order: dict) -> bool:
 
 def sync_paid_change_orders_to_deliverables(project_id: str) -> int:
     """Backfill deliverables from paid change orders (idempotent)."""
-    supabase = get_supabase()
     paid_orders = (
-        supabase.table("change_orders")
-        .select("*")
-        .eq("project_id", project_id)
-        .eq("status", "paid")
-        .execute()
-        .data
+        run_query(
+            lambda sb: sb.table("change_orders")
+            .select("*")
+            .eq("project_id", project_id)
+            .eq("status", "paid")
+        ).data
         or []
     )
 

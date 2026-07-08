@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from db.supabase_client import get_supabase
+from db.supabase_client import run_query
 from services.canvas_model import build_canvas_markdown_from_project
 from services.deliverables import (
     load_effective_deliverables,
@@ -11,13 +11,11 @@ from services.deliverables import (
 
 
 def load_project_by_channel(channel_id: str) -> dict | None:
-    supabase = get_supabase()
-    project_result = (
-        supabase.table("projects")
+    project_result = run_query(
+        lambda sb: sb.table("projects")
         .select("*")
         .eq("slack_channel_id", channel_id)
         .limit(1)
-        .execute()
     )
     if not project_result.data:
         return None

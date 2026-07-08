@@ -56,7 +56,7 @@ def test_flag_already_exists_true(monkeypatch):
             return FakeTable()
 
     monkeypatch.setattr(
-        "services.scope_warnings.get_supabase",
+        "db.supabase_client.get_supabase",
         lambda: FakeSupabase(),
     )
 

@@ -18,7 +18,7 @@ from slack_sdk.web.async_client import AsyncWebClient
 
 
 
-from db.supabase_client import get_supabase
+from db.supabase_client import get_supabase, run_query
 
 from listeners.views.warning_card import build_warning_blocks
 
@@ -55,27 +55,26 @@ from services.user_messages import (
 logger = logging.getLogger(__name__)
 
 
+def _is_unique_violation(exc: Exception) -> bool:
+    """True if the exception is a Postgres unique-constraint violation (code 23505)."""
+    code = getattr(exc, "code", None)
+    if code == "23505":
+        return True
+    message = str(getattr(exc, "message", "") or exc)
+    return "23505" in message or "duplicate key value" in message
+
+
 
 
 
 def flag_already_exists(project_id: str, message_ts: str) -> bool:
 
-    supabase = get_supabase()
-
-    existing = (
-
-        supabase.table("change_orders")
-
+    existing = run_query(
+        lambda sb: sb.table("change_orders")
         .select("id")
-
         .eq("project_id", project_id)
-
         .eq("trigger_message_ts", message_ts)
-
         .limit(1)
-
-        .execute()
-
     )
 
     return bool(existing.data)
@@ -101,8 +100,6 @@ def create_scope_flag(
     client_id: str | None = None,
 
 ) -> str:
-
-    supabase = get_supabase()
 
     row = {
 
@@ -132,7 +129,23 @@ def create_scope_flag(
 
     }
 
-    result = supabase.table("change_orders").insert(row).execute()
+    try:
+        result = run_query(lambda sb: sb.table("change_orders").insert(row))
+    except Exception as exc:
+        # Unique index on (project_id, trigger_message_ts) rejects concurrent
+        # duplicates from Slack retries — return the existing flag instead.
+        if _is_unique_violation(exc) and message_ts:
+            existing = run_query(
+                lambda sb: sb.table("change_orders")
+                .select("id")
+                .eq("project_id", project_id)
+                .eq("trigger_message_ts", message_ts)
+                .limit(1)
+            )
+            if existing.data:
+                logger.info("scope_flag_dedup ts=%s", message_ts)
+                return existing.data[0]["id"]
+        raise
 
     return result.data[0]["id"]
 

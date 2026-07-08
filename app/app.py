@@ -105,6 +105,21 @@ async def _start_http():
         return web.Response(text="ok")
 
     async def slack_events(request: web.Request) -> web.Response:
+        # Slack retries an event (only the Events API sets this header) when it
+        # doesn't get a 200 within 3s. Our message handler runs synchronously
+        # (process_before_response), so a slow cold start triggers retries that
+        # would double-process and create duplicate change orders. Ack retries
+        # immediately without re-dispatching. Slash commands/interactivity do not
+        # use this header, so they are unaffected.
+        retry_num = request.headers.get("X-Slack-Retry-Num")
+        if retry_num:
+            logger.info(
+                "slack_retry_ignored num=%s reason=%s",
+                retry_num,
+                request.headers.get("X-Slack-Retry-Reason"),
+            )
+            return web.Response(status=200, text="")
+
         bolt_req = await to_bolt_request(request)
         bolt_resp = await app.async_dispatch(bolt_req)
         if bolt_resp is None:
