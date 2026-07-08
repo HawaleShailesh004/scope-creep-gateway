@@ -1,0 +1,10 @@
+# Pre-download the embedding model at build time so it is baked into the image
+# instead of being fetched from HuggingFace on every cold start.
+[variables]
+HF_HOME = "/app/.cache/huggingface"
+
+[phases.build]
+dependsOn = ["install"]
+cmds = [
+  "python -c \"from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')\"",
+]

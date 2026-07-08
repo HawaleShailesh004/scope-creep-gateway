@@ -24,6 +24,10 @@ def _configure_logging() -> logging.Logger:
         level_name = "INFO" if os.environ.get("PORT") else "DEBUG"
     level = getattr(logging, level_name, logging.INFO)
     logging.basicConfig(level=level)
+    # These emit one INFO line per outbound request/model file, which floods
+    # Railway's 500 logs/sec cap during startup fan-out. Keep them at WARNING.
+    for noisy in ("httpx", "httpcore", "huggingface_hub", "sentence_transformers"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     return logging.getLogger(__name__)
 
 
@@ -42,8 +46,9 @@ def _transport() -> str:
 
 def _build_app() -> AsyncApp:
     transport = _transport()
+    # Pass only `client` (it already carries the token); passing `token` too
+    # triggers a "token will be unused" warning from Bolt.
     kwargs: dict = {
-        "token": os.environ.get("SLACK_BOT_TOKEN"),
         "client": AsyncWebClient(
             base_url=os.environ.get("SLACK_API_URL", "https://slack.com/api"),
             token=os.environ.get("SLACK_BOT_TOKEN"),
