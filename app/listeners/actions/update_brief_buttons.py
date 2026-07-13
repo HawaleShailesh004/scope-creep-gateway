@@ -81,6 +81,6 @@ async def handle_open_update_brief(
 
     await respond(
         replace_original=True,
-        text=":white_check_mark: The brief editor is open above — save when ready.",
+        text=":white_check_mark: The brief editor is open above - save when ready.",
     )
     logger.info("update_brief_modal_opened channel_id=%s", channel_id)

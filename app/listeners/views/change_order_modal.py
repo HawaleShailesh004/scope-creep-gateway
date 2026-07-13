@@ -70,7 +70,7 @@ def build_loading_change_order_modal(
     thread_ts: str,
     project_id: str,
 ) -> dict:
-    """Opens within Slack's 3s trigger_id window; filled via views.update after AI drafting."""
+    """Opens within Slack's 3s trigger_id window; filled via views.update after drafting."""
     return {
         "type": "modal",
         "callback_id": CALLBACK_ID,
@@ -88,7 +88,7 @@ def build_loading_change_order_modal(
                 "text": {
                     "type": "mrkdwn",
                     "text": (
-                        ":hourglass_flowing_sand: Drafting change order with AI… "
+                        ":hourglass_flowing_sand: ScopeGuard is drafting a change order… "
                         "This usually takes a few seconds."
                     ),
                 },

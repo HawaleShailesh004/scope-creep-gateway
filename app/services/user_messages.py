@@ -16,7 +16,7 @@ SETUP_IN_PROGRESS = (
 
 SETUP_LAUNCHER_INTRO = (
     "Ready to define the project scope? "
-    "Choose how you'd like to set up the brief — only you can see this."
+    "Choose how you'd like to set up the brief - only you can see this."
 )
 
 SETUP_PATH_PROMPT = (
@@ -29,7 +29,7 @@ SETUP_PATH_EXTRACT = "Draft from conversation"
 SETUP_PATH_MANUAL = "Fill it in myself"
 
 EXTRACT_READY = (
-    "Here's what I picked up from your chat — check it, tweak anything, "
+    "Here's what I picked up from your chat - check it, tweak anything, "
     "and confirm. I won't lock anything in without you."
 )
 
@@ -43,23 +43,23 @@ EXTRACT_FAILED = (
 )
 
 EXTRACT_DRAFT_READY = (
-    ":white_check_mark: Draft ready from your conversation — "
-    "click *Review AI draft* to check, tweak, and confirm.\n"
+    ":white_check_mark: Draft ready from your conversation - "
+    "click *Review draft* to check, tweak, and confirm.\n"
     "_You'll still need to pick the client in the form._"
 )
 
 EXTRACT_PARTIAL = (
     ":pencil2: I pulled some of this from your chat, but it's not enough to lock in yet.\n"
     "Still needed: *{missing}*\n"
-    "Click *Review AI draft* to complete the form, or *Fill it in myself*."
+    "Click *Review draft* to complete the form, or *Fill it in myself*."
 )
 
 EXTRACT_MODAL_EMPTY = (
-    ":memo: *No kickoff messages yet* — fill in the required fields below."
+    ":memo: *No kickoff messages yet* - fill in the required fields below."
 )
 
 EXTRACT_MODAL_INSUFFICIENT = (
-    ":warning: *Fill required fields* — your chat didn't clarify scope enough. "
+    ":warning: *Fill required fields* - your chat didn't clarify scope enough. "
     "Still needed: *{missing}*"
 )
 
@@ -73,11 +73,11 @@ EXTRACT_MODAL_STILL_NEED_CLIENT = (
 )
 
 EXTRACT_MODAL_FAILED = (
-    ":warning: *Couldn't read your chat* — please fill the required fields below."
+    ":warning: *Couldn't read your chat* - please fill the required fields below."
 )
 
 EXTRACT_EMPTY_OPENED = (
-    ":memo: No kickoff messages in this channel yet — "
+    ":memo: No kickoff messages in this channel yet - "
     "opened the blank brief form for you."
 )
 
@@ -88,7 +88,7 @@ EXTRACT_DRAFT_EXPIRED = (
 SETUP_OPENING_FORM = ":hourglass_flowing_sand: Opening the project brief form…"
 
 SETUP_FORM_READY = (
-    ":white_check_mark: The project brief form is open above — "
+    ":white_check_mark: The project brief form is open above - "
     "fill it in and click *Create brief* when you're done."
 )
 
@@ -110,13 +110,13 @@ SETUP_FAILED = (
 SETUP_SUCCESS_CHANNEL = (
     "Project brief created for *{project_name}*. "
     "Scope Health: 100%. The canvas is attached to this channel.\n"
-    ":shield: Scope Creep Gateway is watching this project for the freelancer. "
-    "Detections are private to them."
+    ":shield: *Scope Health* is active for the freelancer on this project. "
+    "Scope checks stay private to them."
 )
 
 SETUP_SUCCESS_NOT_IN_CHANNEL = (
     "Project brief saved for *{project_name}* and the canvas was created. "
-    "Invite me to this channel with `/invite @Scope Creep Gateway` "
+    "Invite me to this channel with `/invite @Scope Health` "
     "if you'd like public confirmation messages here."
 )
 
@@ -135,12 +135,12 @@ CHANGE_ORDER_IN_PROGRESS = (
 CHANGE_ORDER_OPENING_FORM = ":hourglass_flowing_sand: Opening the change order form…"
 
 CHANGE_ORDER_FORM_READY = (
-    ":white_check_mark: The change order form is open above — "
+    ":white_check_mark: The change order form is open above - "
     "review the draft and click *Post to channel* when ready."
 )
 
 CHANGE_ORDER_POSTING = (
-    ":hourglass_flowing_sand: Posting your change order and updating the scope canvas — "
+    ":hourglass_flowing_sand: Posting your change order and updating the scope canvas - "
     "just a moment."
 )
 
@@ -151,7 +151,7 @@ CHANGE_ORDER_POSTED_SUCCESS = (
 
 CANVAS_UPDATE_FAILED = (
     "Your change order was posted, but we couldn't refresh the Canvas tab. "
-    "Scope Health in the database is *{scope_health}%* — try reopening the canvas."
+    "Scope Health in the database is *{scope_health}%* - try reopening the canvas."
 )
 
 CHANGE_ORDER_ALREADY_POSTED = (
@@ -262,8 +262,8 @@ SETUP_FREELANCER_ONLY_HINT = (
     "so scope warnings reach the right person."
 )
 
-SIMULATE_PAYMENT_FREELANCER_ONLY = (
-    "Only the freelancer can mark a change order as paid in demo mode."
+SIMULATE_PAYMENT_CLIENT_ONLY = (
+    "Only the client on this project can approve or simulate payment."
 )
 
 LEGACY_WARNING_BUTTON = (
@@ -305,16 +305,16 @@ POST_CHANGE_ORDER_FAILED = (
 # --- Tier 1: disclosure & trust ---
 
 DISCLOSURE_NOTICE = (
-    ":shield: *Scope Creep Gateway is active in this channel.* "
-    "It helps {freelancer} keep the agreed scope and budget clear by tracking "
-    "messages against the project brief. Detections are private to {freelancer}, "
-    "nothing is shared outside this channel, and messages are never used to train AI. "
-    "You can ask {freelancer} to remove it anytime."
+    ":shield: *Scope Health is active in this channel.* "
+    "It helps {freelancer} keep the agreed brief and budget clear by checking "
+    "new requests against the project scope. Alerts stay private to {freelancer}, "
+    "nothing is shared outside this channel, and your messages are never used for model training. "
+    "You can ask {freelancer} to turn it off anytime."
 )
 
 BOT_JOIN_INTRO = (
-    "Hi! I'm Scope Creep Gateway. Run `/setup-brief` or `/import-brief` when you're "
-    "ready to define the project scope."
+    "Hi! I'm *Scope Health* - I help keep this project on brief. "
+    "Run `/setup-brief` or `/import-brief` when you're ready to define the scope."
 )
 
 IMPORT_BRIEF_LAUNCHER_INTRO = (
@@ -346,15 +346,15 @@ GATEWAY_TOGGLE_FREELANCER_ONLY = (
 # --- Tier 1: absorb ---
 
 ABSORB_CONFIRMED = (
-    "Logged as goodwill — I'll keep track of what you've absorbed."
+    "Logged as goodwill - I'll keep track of what you've absorbed."
 )
 
 ABSORB_THRESHOLD_NUDGE = (
-    "_You've absorbed {total} from this client already — consider billing this one._"
+    "_You've absorbed {total} from this client already - consider billing this one._"
 )
 
 CAPACITY_NUDGE = (
-    "_Heads-up — that's about {hours}h of unbilled extras this week already. Still your call._"
+    "_Heads-up - that's about {hours}h of unbilled extras this week already. Still your call._"
 )
 
 WEEKLY_ABSORBED_LINE = (
@@ -393,7 +393,7 @@ CLIENT_REPORT_EMPTY = (
 )
 
 CLIENT_REPORT = (
-    "*Client report — {client}*\n"
+    "*Client report - {client}*\n"
     "• Projects: {project_count}\n"
     "• Open flags: {open_flags}\n"
     "• Absorbed: {absorbed_count} items ({absorbed_value}, ~{absorbed_hours}h)\n"
@@ -403,9 +403,9 @@ CLIENT_REPORT = (
 )
 
 STUDIO_WEEKLY_SUMMARY = (
-    "📋 *Your scope week — {studio_name}*\n\n"
+    "📋 *Your scope week - {studio_name}*\n\n"
     "Across {active_projects} active projects:\n"
-    "🕐 Absorbed: ~{absorbed_hours}h (~{absorbed_value}) unbilled extras — heaviest: {top_client}\n"
+    "🕐 Absorbed: ~{absorbed_hours}h (~{absorbed_value}) unbilled extras - heaviest: {top_client}\n"
     "{billing_line}\n"
     "{heaviest_line}\n"
     "{clean_line}\n"
@@ -413,13 +413,13 @@ STUDIO_WEEKLY_SUMMARY = (
 )
 
 STUDIO_REPORT_LAUNCHER = (
-    "Your studio-level scope summary — capacity, billing, and client patterns. "
+    "Your studio-level scope summary - capacity, billing, and client patterns. "
     "Click below. Only you can see this."
 )
 
 CLIENT_REPORT_LAUNCHER = (
     "See how this client compares across projects. "
-    "Click below — only you can see this."
+    "Click below - only you can see this."
 )
 
 # --- Tier 1: revisions ---
@@ -431,7 +431,7 @@ SCOPE_WARNING_REVISION = (
 
 SCOPE_WARNING_REVISION_BODY = (
     'Client asked: "{quoted}"\n'
-    "This is a revision on *{deliverable}* — not new scope, but over the agreed limit."
+    "This is a revision on *{deliverable}* - not new scope, but over the agreed limit."
 )
 
 # --- Tier 2: draft reply ---
@@ -479,8 +479,8 @@ APP_HOME_PRIVACY = (
     "*Privacy & control*\n"
     "• *What I can see:* messages in channels where I'm added, to check them against "
     "the project brief.\n"
-    "• *What I store:* only the details of flagged scope changes — not your everyday "
+    "• *What I store:* only the details of flagged scope changes - not your everyday "
     "messages.\n"
-    "• *What I never do:* share or sell your data, or use it to train AI.\n"
+    "• *What I never do:* share or sell your data, or use it for model training.\n"
     "• *Turn me off:* remove me from a channel, or run `/scope-gateway-off` there."
 )

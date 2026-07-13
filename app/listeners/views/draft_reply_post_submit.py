@@ -6,6 +6,7 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
 
 from listeners.views.draft_reply_modal import POST_CALLBACK_ID, build_draft_reply_posted_modal
+from services.freelancer_client import post_client_facing_message
 from services.project_context import load_project_by_channel
 from services.user_messages import (
     DRAFT_REPLY_EMPTY,
@@ -79,7 +80,7 @@ async def handle_draft_reply_post(
         )
         return
 
-    # Ack within 3s — post to channel after this, then views.update for result.
+    # Ack within 3s - post to channel after this, then views.update for result.
     await ack(response_action="update", view=_POSTING_VIEW)
 
     try:
@@ -98,11 +99,14 @@ async def handle_draft_reply_post(
             )
             return
 
-        kwargs: dict = {"channel": channel_id, "text": reply_text}
-        if thread_ts:
-            kwargs["thread_ts"] = thread_ts
-
-        await client.chat_postMessage(**kwargs)
+        # Post as the freelancer so the client sees a human reply, not the bot.
+        await post_client_facing_message(
+            client,
+            channel=channel_id,
+            text=reply_text,
+            thread_ts=thread_ts,
+            team_id=body.get("team", {}).get("id"),
+        )
         await _views_update(
             client, view_id=view_id, view=build_draft_reply_posted_modal()
         )

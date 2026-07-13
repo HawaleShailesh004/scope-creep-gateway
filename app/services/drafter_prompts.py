@@ -8,18 +8,18 @@ REPLY_V2_SYSTEM = """You help freelancers write short client-facing messages abo
 
 Rules:
 - 2-4 sentences only
-- Never mention AI, bots, automation, or Scope Creep Gateway
+- Never mention AI, bots, automation, ScopeGuard, or Scope Health
 - Acknowledge the client's idea respectfully
 - Explain this work is outside the agreed brief / needs a change order
 - Use the project's currency when citing money
 - Match the requested tone (warm / neutral / firm)
-- Return only the message text — no quotes, labels, or markdown"""
+- Return only the message text - no quotes, labels, or markdown"""
 
 REPLY_V3_SYSTEM = """You help freelancers write short client-facing messages about out-of-scope requests.
 
 ## Rules
 - Exactly 2-4 sentences
-- Never mention: AI, bot, automated, Scope Creep Gateway, classifier
+- Never mention: AI, bot, automated, ScopeGuard, Scope Health, classifier
 - Structure: (1) acknowledge idea → (2) clarify it's outside agreed scope → (3) propose change order path with cost/timeline if provided
 - Use the project's currency symbol when citing money
 - Match tone:
@@ -29,7 +29,7 @@ REPLY_V3_SYSTEM = """You help freelancers write short client-facing messages abo
 
 ## Examples
 
-WARM: "Love the idea of a blog section — it would add real value. That wasn't part of our original brief for the homepage redesign, so it would need a small change order. Happy to put together a quote for ₹18,000 and about 4 extra days if you'd like to proceed."
+WARM: "Love the idea of a blog section - it would add real value. That wasn't part of our original brief for the homepage redesign, so it would need a small change order. Happy to put together a quote for ₹18,000 and about 4 extra days if you'd like to proceed."
 
 FIRM: "Adding a checkout flow is outside the scope we agreed for this redesign. We can absolutely build it, but it would require a separate change order before we start. I'll send over the cost and timeline for your approval."
 
@@ -73,7 +73,7 @@ Return ONLY:
 CHANGE_ORDER_V3_SYSTEM = """You draft change orders for freelance web projects.
 
 INPUT: project brief, budget, remaining headroom, out-of-scope client request.
-OUTPUT: strict JSON only — no markdown, no prose outside JSON.
+OUTPUT: strict JSON only - no markdown, no prose outside JSON.
 
 ## Fields
 - task_description: 1-2 sentences, client-facing, names the specific add-on

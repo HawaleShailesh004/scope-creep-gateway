@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" font-family="'Inter', system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .slack-primitive { fill: #EA580C; stroke: #9A3412; stroke-width: 2; }
+      .slack-primitive-text { fill: #ffffff; font-weight: 700; }
+      .slack-primitive-sub { fill: #ffffff; font-size: 12px; text-anchor: middle; opacity: 0.92; }
+      .core { fill: #E0F2FE; stroke: #0284C7; stroke-width: 2; }
+      .data { fill: #ECFDF5; stroke: #059669; stroke-width: 2; }
+      .llm { fill: #FEF3C7; stroke: #D97706; stroke-width: 2; }
+      .label { font-size: 15px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+      .sublabel { font-size: 12px; fill: #475569; text-anchor: middle; }
+      .arrow { stroke: #475569; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .title { font-size: 24px; font-weight: 700; fill: #0f172a; }
+      .legend { font-size: 12px; fill: #475569; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="45" class="title">ScopeGuard - Architecture</text>
+  <text x="40" y="68" font-size="14" fill="#64748b">An ambient Slack agent built on Slack's 2026 platform (Events + MCP + RTS)</text>
+
+  <!-- Legend -->
+  <rect x="900" y="30" width="16" height="16" class="slack-primitive"/>
+  <text x="924" y="43" class="legend">Slack primitive</text>
+  <rect x="900" y="52" width="16" height="16" class="core"/>
+  <text x="924" y="65" class="legend">ScopeGuard service</text>
+  <rect x="1030" y="30" width="16" height="16" class="llm"/>
+  <text x="1054" y="43" class="legend">Llama (Groq)</text>
+  <rect x="1030" y="52" width="16" height="16" class="data"/>
+  <text x="1054" y="65" class="legend">Data</text>
+
+  <!-- Slack workspace box -->
+  <rect x="40" y="110" width="220" height="500" rx="12" fill="#F8FAFC" stroke="#94A3B8" stroke-dasharray="6,4"/>
+  <text x="150" y="140" class="label">Slack Workspace</text>
+  <text x="150" y="158" class="sublabel">(Keystone Digital Studio)</text>
+
+  <!-- Slack primitives inside workspace -->
+  <rect x="70" y="185" width="160" height="70" rx="8" class="slack-primitive"/>
+  <text x="150" y="215" class="label slack-primitive-text">Events API</text>
+  <text x="150" y="235" class="slack-primitive-sub">message.channels · groups</text>
+
+  <rect x="70" y="285" width="160" height="70" rx="8" class="slack-primitive"/>
+  <text x="150" y="315" class="label slack-primitive-text">MCP</text>
+  <text x="150" y="335" class="slack-primitive-sub">Canvas read / write</text>
+
+  <rect x="70" y="385" width="160" height="70" rx="8" class="slack-primitive"/>
+  <text x="150" y="415" class="label slack-primitive-text">Real-Time Search</text>
+  <text x="150" y="435" class="slack-primitive-sub">assistant.search.context</text>
+
+  <rect x="70" y="485" width="160" height="70" rx="8" class="slack-primitive"/>
+  <text x="150" y="515" class="label slack-primitive-text">Block Kit</text>
+  <text x="150" y="535" class="slack-primitive-sub">Ephemeral · modals · cards</text>
+
+  <!-- Scopeguard core -->
+  <rect x="360" y="110" width="500" height="500" rx="12" fill="#F8FAFC" stroke="#0284C7" stroke-dasharray="6,4"/>
+  <text x="610" y="140" class="label">ScopeGuard (Bolt Python · Railway)</text>
+
+  <!-- Gate -->
+  <rect x="390" y="180" width="200" height="80" rx="8" class="core"/>
+  <text x="490" y="210" class="label">Local gate</text>
+  <text x="490" y="230" class="sublabel">Stage 1: structural filter</text>
+  <text x="490" y="248" class="sublabel">Stage 2: embeddings</text>
+
+  <!-- Classifier -->
+  <rect x="630" y="180" width="200" height="80" rx="8" class="llm"/>
+  <text x="730" y="210" class="label">Llama 3.3 70B</text>
+  <text x="730" y="230" class="sublabel">via Groq · verdict · size</text>
+  <text x="730" y="248" class="sublabel">confidence · routing</text>
+
+  <!-- Decision -->
+  <rect x="510" y="300" width="200" height="70" rx="8" class="core"/>
+  <text x="610" y="330" class="label">Decision router</text>
+  <text x="610" y="350" class="sublabel">trivial → absorb silently</text>
+
+  <!-- Actions -->
+  <rect x="390" y="410" width="200" height="80" rx="8" class="core"/>
+  <text x="490" y="440" class="label">Warning card</text>
+  <text x="490" y="460" class="sublabel">Bill · Let it slide · Not creep</text>
+  <text x="490" y="478" class="sublabel">Draft reply</text>
+
+  <rect x="630" y="410" width="200" height="80" rx="8" class="core"/>
+  <text x="730" y="440" class="label">Change order</text>
+  <text x="730" y="460" class="sublabel">Draft · Post · Approve</text>
+  <text x="730" y="478" class="sublabel">Stripe Payment Link (test)</text>
+
+  <!-- Canvas -->
+  <rect x="510" y="520" width="200" height="70" rx="8" class="core"/>
+  <text x="610" y="550" class="label">Scope Health Canvas</text>
+  <text x="610" y="570" class="sublabel">health · bars · change log</text>
+
+  <!-- Data layer -->
+  <rect x="920" y="110" width="240" height="500" rx="12" fill="#F8FAFC" stroke="#059669" stroke-dasharray="6,4"/>
+  <text x="1040" y="140" class="label">Data</text>
+
+  <rect x="950" y="180" width="180" height="80" rx="8" class="data"/>
+  <text x="1040" y="210" class="label">Supabase (Postgres)</text>
+  <text x="1040" y="230" class="sublabel">projects · deliverables</text>
+  <text x="1040" y="248" class="sublabel">change_orders · absorbed</text>
+
+  <rect x="950" y="300" width="180" height="70" rx="8" class="data"/>
+  <text x="1040" y="330" class="label">Reference vectors</text>
+  <text x="1040" y="350" class="sublabel">per-project (cached)</text>
+
+  <rect x="950" y="410" width="180" height="80" rx="8" class="core"/>
+  <text x="1040" y="440" class="label">Portfolio brain</text>
+  <text x="1040" y="460" class="sublabel">/studio-report</text>
+  <text x="1040" y="478" class="sublabel">weekly summary</text>
+
+  <rect x="950" y="520" width="180" height="70" rx="8" class="core"/>
+  <text x="1040" y="550" class="label">Trust layer</text>
+  <text x="1040" y="570" class="sublabel">disclosure · retention</text>
+
+  <!-- Arrows: Events -> Gate -->
+  <path d="M230 220 L390 220" class="arrow"/>
+  <!-- Gate -> Classifier -->
+  <path d="M590 220 L630 220" class="arrow"/>
+  <!-- Classifier -> Decision -->
+  <path d="M730 260 L650 300" class="arrow"/>
+  <!-- Gate -> Decision (skip path) -->
+  <path d="M490 260 L570 300" class="arrow"/>
+  <!-- Decision -> Warning -->
+  <path d="M550 370 L490 410" class="arrow"/>
+  <!-- Warning -> Change Order -->
+  <path d="M590 450 L630 450" class="arrow"/>
+  <!-- Change Order -> Canvas -->
+  <path d="M730 490 L670 520" class="arrow"/>
+  <!-- Warning -> Canvas -->
+  <path d="M490 490 L570 520" class="arrow"/>
+
+  <!-- MCP <-> Canvas -->
+  <path d="M230 320 L510 545" class="arrow"/>
+  <!-- RTS -> Warning -->
+  <path d="M230 420 L390 440" class="arrow"/>
+  <!-- Block Kit -> Warning & CO -->
+  <path d="M230 520 L390 465" class="arrow"/>
+
+  <!-- Change Order -> Supabase -->
+  <path d="M830 440 L950 220" class="arrow"/>
+  <!-- Absorbed -> Supabase -->
+  <path d="M590 450 L950 245" class="arrow" opacity="0.4"/>
+  <!-- Gate <-> Reference vectors -->
+  <path d="M590 240 L950 330" class="arrow" opacity="0.5"/>
+  <!-- Supabase -> Portfolio brain -->
+  <path d="M1040 260 L1040 410" class="arrow"/>
+  <!-- Portfolio brain -> Slack (studio-hq) -->
+  <path d="M950 450 L230 500" class="arrow" opacity="0.4"/>
+
+  <!-- Footnote -->
+  <text x="40" y="700" font-size="12" fill="#64748b">
+    Events API captures every message in real time · Local gate skips obvious non-requests · Llama on Groq judges scope + size ·
+  </text>
+  <text x="40" y="716" font-size="12" fill="#64748b">
+    MCP keeps the Canvas as the source of record · RTS pulls channel history · Trust layer disclosed openly, judgment stays private.
+  </text>
+</svg>

@@ -1,4 +1,4 @@
--- Scope Creep Gateway — Tier 1 v2 migration
+-- ScopeGuard - Tier 1 v2 migration
 -- Run in Supabase SQL Editor AFTER Phase 1 schema exists.
 -- Safe to re-run: uses IF NOT EXISTS / IF NOT EXISTS columns pattern.
 
@@ -52,7 +52,7 @@ alter table change_orders add column if not exists estimated_value numeric;
 alter table change_orders add column if not exists origin text default 'flag';
 
 -- ---------------------------------------------------------------------------
--- RLS for new tables (dev — tighten for production)
+-- RLS for new tables (dev - tighten for production)
 -- ---------------------------------------------------------------------------
 
 alter table clients enable row level security;

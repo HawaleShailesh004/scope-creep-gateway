@@ -29,7 +29,7 @@ async def push_canvas_update(
     """
     if mode == "incremental":
         logger.info(
-            "canvas incremental requested for %s — using full rebuild (section "
+            "canvas incremental requested for %s - using full rebuild (section "
             "replace duplicates content with multi-heading markdown)",
             canvas_id,
         )

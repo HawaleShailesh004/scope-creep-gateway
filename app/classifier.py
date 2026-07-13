@@ -42,7 +42,7 @@ def classify(
     exclusion_block = ""
     if exclusions:
         exclusion_block = (
-            "\n\nEXPLICITLY OUT OF SCOPE (noted at kickoff — high confidence if matched):\n"
+            "\n\nEXPLICITLY OUT OF SCOPE (noted at kickoff - high confidence if matched):\n"
             + "\n".join("- " + e for e in exclusions)
         )
 

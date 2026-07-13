@@ -7,26 +7,35 @@ from slack_bolt.async_app import AsyncApp
 from slack_sdk.web.async_client import AsyncWebClient
 
 from listeners import register_listeners
+from mode import RAILWAY_SLACK_EVENTS_URL, apply_mode, mode_banner, resolve_app_mode
 from services.retention import purge_expired_text
 
 load_dotenv(dotenv_path=".env", override=False)
 
+# Resolve once at import so transport / OAuth behavior is consistent.
+APP_MODE = resolve_app_mode()
+apply_mode(APP_MODE)
+
 RETENTION_INTERVAL_SECONDS = 6 * 60 * 60
-RAILWAY_SLACK_EVENTS_URL = (
-    "https://scope-creep-gateway-production.up.railway.app/slack/events"
-)
 
 
 def _configure_logging() -> logging.Logger:
     level_name = os.environ.get("LOG_LEVEL", "").strip().upper()
     if not level_name:
-        # Railway sets PORT; default to INFO there to avoid log rate limits.
-        level_name = "INFO" if os.environ.get("PORT") else "DEBUG"
+        # Default INFO - local DEBUG floods the asyncio loop (hpack) and can
+        # delay Socket Mode acks enough to trigger Slack operation_timeout.
+        level_name = "INFO"
     level = getattr(logging, level_name, logging.INFO)
     logging.basicConfig(level=level)
-    # These emit one INFO line per outbound request/model file, which floods
-    # Railway's 500 logs/sec cap during startup fan-out. Keep them at WARNING.
-    for noisy in ("httpx", "httpcore", "huggingface_hub", "sentence_transformers"):
+    # These emit one INFO/DEBUG line per outbound request/model file, which floods
+    # Railway's 500 logs/sec cap and can stall the asyncio loop locally.
+    for noisy in (
+        "httpx",
+        "httpcore",
+        "hpack",
+        "huggingface_hub",
+        "sentence_transformers",
+    ):
         logging.getLogger(noisy).setLevel(logging.WARNING)
     return logging.getLogger(__name__)
 
@@ -35,37 +44,41 @@ logger = _configure_logging()
 
 
 def _transport() -> str:
-    explicit = os.environ.get("SLACK_TRANSPORT", "").strip().lower()
-    if explicit:
-        return explicit
-    # Railway and most PaaS set PORT; use HTTP automatically in that case.
-    if os.environ.get("PORT"):
-        return "http"
-    return "socket"
+    return APP_MODE.transport
 
 
 def _build_app() -> AsyncApp:
     transport = _transport()
-    # Pass only `client` (it already carries the token); passing `token` too
-    # triggers a "token will be unused" warning from Bolt.
-    kwargs: dict = {
-        "client": AsyncWebClient(
-            base_url=os.environ.get("SLACK_API_URL", "https://slack.com/api"),
-            token=os.environ.get("SLACK_BOT_TOKEN"),
-        ),
+    # Single-workspace mode uses SLACK_BOT_TOKEN. If SLACK_CLIENT_ID/SECRET are
+    # present (for app_oauth.py), Bolt auto-enables a file InstallationStore and
+    # ignores the bot token - that can delay slash-command acks into
+    # operation_timeout. Temporarily hide OAuth env vars for this App only.
+    saved_oauth = {
+        key: os.environ.pop(key)
+        for key in ("SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET")
+        if key in os.environ
     }
-    if transport == "http":
-        signing_secret = os.environ.get("SLACK_SIGNING_SECRET", "").strip()
-        if not signing_secret:
-            raise RuntimeError(
-                "SLACK_SIGNING_SECRET is required when SLACK_TRANSPORT=http"
-            )
-        kwargs["signing_secret"] = signing_secret
-        # Slash commands and interactivity must ack in the HTTP response body.
-        kwargs["process_before_response"] = True
-    app = AsyncApp(**kwargs)
-    register_listeners(app)
-    return app
+    try:
+        kwargs: dict = {
+            "client": AsyncWebClient(
+                base_url=os.environ.get("SLACK_API_URL", "https://slack.com/api"),
+                token=os.environ.get("SLACK_BOT_TOKEN"),
+            ),
+        }
+        if transport == "http":
+            signing_secret = os.environ.get("SLACK_SIGNING_SECRET", "").strip()
+            if not signing_secret:
+                raise RuntimeError(
+                    "SLACK_SIGNING_SECRET is required when APP_MODE=prod (HTTP)"
+                )
+            kwargs["signing_secret"] = signing_secret
+            # Slash commands and interactivity must ack in the HTTP response body.
+            kwargs["process_before_response"] = True
+        app = AsyncApp(**kwargs)
+        register_listeners(app)
+        return app
+    finally:
+        os.environ.update(saved_oauth)
 
 
 app = _build_app()
@@ -87,14 +100,26 @@ async def _purge_on_startup():
         logger.exception("retention_purge_startup_failed")
 
 
+async def _warmup_embedding_gate():
+    """Load MiniLM at boot so the first client message is not blocked on HF download."""
+    try:
+        from services.embedding_gate import _Embedder
+
+        await asyncio.to_thread(_Embedder.get)
+        logger.info("embedding_gate_warmup done")
+    except Exception:
+        logger.exception("embedding_gate_warmup_failed")
+
+
 async def _start_socket_mode():
     from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 
     app_token = os.environ.get("SLACK_APP_TOKEN", "").strip()
     if not app_token:
-        raise RuntimeError("SLACK_APP_TOKEN is required when SLACK_TRANSPORT=socket")
+        raise RuntimeError("SLACK_APP_TOKEN is required when APP_MODE=dev (Socket Mode)")
     asyncio.create_task(_purge_on_startup())
     asyncio.create_task(_retention_loop())
+    asyncio.create_task(_warmup_embedding_gate())
     handler = AsyncSocketModeHandler(app, app_token)
     await handler.start_async()
 
@@ -144,7 +169,7 @@ async def _start_http():
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
     logger.info(
-        "Scope Creep Gateway listening on 0.0.0.0:%s (HTTP) path=%s "
+        "ScopeGuard listening on 0.0.0.0:%s (HTTP) path=%s "
         "process_before_response=%s expected_slack_url=%s",
         port,
         slack_path,
@@ -153,20 +178,19 @@ async def _start_http():
     )
     asyncio.create_task(_purge_on_startup())
     asyncio.create_task(_retention_loop())
+    asyncio.create_task(_warmup_embedding_gate())
     await asyncio.Event().wait()
 
 
 async def main():
-    transport = _transport()
-    logger.info("starting transport=%s", transport)
-    if transport == "http":
+    print(mode_banner(APP_MODE), flush=True)
+    logger.info("starting APP_MODE=%s transport=%s", APP_MODE.name, APP_MODE.transport)
+    if APP_MODE.transport == "http":
         await _start_http()
-    elif transport == "socket":
+    elif APP_MODE.transport == "socket":
         await _start_socket_mode()
     else:
-        raise RuntimeError(
-            f"Unknown SLACK_TRANSPORT={transport!r} (use 'socket' or 'http')"
-        )
+        raise RuntimeError(f"Unknown transport={APP_MODE.transport!r}")
 
 
 if __name__ == "__main__":

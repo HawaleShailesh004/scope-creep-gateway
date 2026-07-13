@@ -33,12 +33,22 @@ async def handle_message(
     say: AsyncSay,
 ):
     """Classify client messages in project channels; warn freelancer on flags."""
+    logger.info(
+        "message_event_received channel=%s user=%s text=%s",
+        event.get("channel"),
+        event.get("user"),
+        (extract_message_text(event) or "")[:120],
+    )
     if not is_project_channel_message(event):
-        logger.debug("scope_classifier_skip not_a_project_channel event=%s", event)
+        logger.info("scope_classifier_skip not_a_project_channel")
         return
 
     if should_skip_message(event):
-        logger.debug("scope_classifier_skip prefilter event=%s", event)
+        logger.info(
+            "scope_classifier_skip prefilter subtype=%s bot_id=%s",
+            event.get("subtype"),
+            event.get("bot_id"),
+        )
         return
 
     channel_id = event.get("channel")

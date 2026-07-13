@@ -1,5 +1,5 @@
 """
-embedding_gate.py — cheap local pre-classifier that decides whether a message
+embedding_gate.py - cheap local pre-classifier that decides whether a message
 needs the full AI scope classifier, or is obviously not a work request and
 can be skipped.
 
@@ -13,15 +13,15 @@ This gate NEVER produces a scope verdict. It returns exactly one of:
 A wrong SKIP must only ever be "we ignored a non-request". It must NEVER be
 "we missed a scope-creep request". Every rule below is biased toward ESCALATE.
 When in doubt, escalate. Errors escalate. Novel text escalates. Anything that
-looks like a request escalates — even if it's topically similar to existing work
+looks like a request escalates - even if it's topically similar to existing work
 (because "add a SECOND homepage" is similar to a "homepage" deliverable but is
 still creep).
 
 TWO STAGES (both local, both fast):
-    Stage 1 — structural filter (regex/keywords, microseconds):
+    Stage 1 - structural filter (regex/keywords, microseconds):
         confidently drop obvious non-requests (thanks/ack/emoji/status) and
         confidently flag obvious requests (imperatives / "can you" / "please add").
-    Stage 2 — embedding novelty router (~5-15ms, only if Stage 1 is unsure):
+    Stage 2 - embedding novelty router (~5-15ms, only if Stage 1 is unsure):
         embed the message, compare to cached reference clusters, and SKIP only
         when it is clearly closest to the "not a request" cluster AND not novel.
 
@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 class GateDecision(str, Enum):
-    SKIP = "skip"          # not a work request — do nothing, no AI call
+    SKIP = "skip"          # not a work request - do nothing, no AI call
     ESCALATE = "escalate"  # run the existing AI classifier
 
 
@@ -65,7 +65,7 @@ class GateResult:
 
 
 # ---------------------------------------------------------------------------
-# Tunable thresholds — all conservative (bias to ESCALATE)
+# Tunable thresholds - all conservative (bias to ESCALATE)
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -76,18 +76,18 @@ class GateConfig:
     #     (margin over those clusters >= skip_margin)
     skip_nonrequest_sim: float = 0.58   # tuned on corpus; still conservative
     skip_margin: float = 0.06           # margin over work clusters
-    # If a message is novel (far from EVERYTHING we know), escalate — it's unusual,
+    # If a message is novel (far from EVERYTHING we know), escalate - it's unusual,
     # and unusual is exactly when we want AI's judgment.
-    novelty_floor: float = 0.28         # slightly lower — expanded exemplars cover more
+    novelty_floor: float = 0.28         # slightly lower - expanded exemplars cover more
     min_words_for_stage2: int = 3       # very short survivors already handled in stage 1
     nonrequest_top_k: int = 3           # mean of top-k exemplar sims (smoother than max-only)
 
 
 # ---------------------------------------------------------------------------
-# Stage 1 — structural filter (no embeddings, microseconds)
+# Stage 1 - structural filter (no embeddings, microseconds)
 # ---------------------------------------------------------------------------
 
-# Obvious NON-REQUEST patterns. High precision — only drop what is unmistakably
+# Obvious NON-REQUEST patterns. High precision - only drop what is unmistakably
 # not a request for work. Err toward NOT matching (fall through to stage 2/escalate).
 _ACK_ONLY = re.compile(
     r"^\s*("
@@ -122,7 +122,7 @@ _ACK_PHRASE = re.compile(
     re.IGNORECASE,
 )
 
-# Obvious check-in / social / admin chatter — not scope requests.
+# Obvious check-in / social / admin chatter - not scope requests.
 _CHATTER_STATUS = re.compile(
     r"^\s*("
     r"just checking in( on progress)?"
@@ -151,7 +151,7 @@ _EMOJI_OR_PUNCT_ONLY = re.compile(r"^[\s\W_]*$", re.UNICODE)
 _SLACK_EMOJI_ONLY = re.compile(r"^(\s*:[a-z0-9_+\-]+:\s*)+$", re.IGNORECASE)
 
 # Obvious REQUEST signals. If any fire, we ESCALATE straight away (skip stage 2).
-# These are intentionally broad — a false "looks like a request" only costs a
+# These are intentionally broad - a false "looks like a request" only costs a
 # AI call, which is the safe direction.
 _REQUEST_SIGNALS = re.compile(
     r"\b("
@@ -214,7 +214,7 @@ def stage1(text: str) -> Optional[GateResult]:
     if _CHATTER_STATUS.match(stripped):
         return GateResult(GateDecision.SKIP, "stage1_nonrequest", "check-in or admin chatter")
 
-    # Very short and no request signal — unlikely to be a work request, but let
+    # Very short and no request signal - unlikely to be a work request, but let
     # Stage 2 (or escalation) decide rather than hard-skipping here, because short
     # loaded asks exist ("dark mode too"). We only hard-skip the ack/emoji cases.
     return None
@@ -239,7 +239,7 @@ class _Embedder:
             self.model = SentenceTransformer(model_name)
             self.enabled = True
             logger.info("embedding_gate: loaded %s", model_name)
-        except Exception as e:  # noqa: BLE001 — any failure => disabled, safe
+        except Exception as e:  # noqa: BLE001 - any failure => disabled, safe
             logger.warning("embedding_gate: model unavailable, stage 2 disabled (%s)", e)
 
     @classmethod
@@ -374,7 +374,7 @@ def build_reference_vectors(
 
 
 # ---------------------------------------------------------------------------
-# Stage 2 — embedding novelty router
+# Stage 2 - embedding novelty router
 # ---------------------------------------------------------------------------
 
 def _max_sim(vec, matrix) -> float:
@@ -388,7 +388,7 @@ def _max_sim(vec, matrix) -> float:
 
 
 def _top_k_mean_sim(vec, matrix, k: int = 3) -> float:
-    """Mean of top-k cosine similarities — smoother than max-only."""
+    """Mean of top-k cosine similarities - smoother than max-only."""
     if matrix is None or len(matrix) == 0:
         return 0.0
     import numpy as np
@@ -439,7 +439,7 @@ def stage2(text: str, refs: ReferenceVectors, cfg: GateConfig) -> GateResult:
                           f"chatter (nonreq={sim_nonreq:.2f} > work={sim_work:.2f})",
                           similarity=sim_nonreq)
 
-    # Anything else — including "somewhat close to a deliverable" — escalates.
+    # Anything else - including "somewhat close to a deliverable" - escalates.
     return GateResult(GateDecision.ESCALATE, "stage2_escalate",
                       f"not confidently chatter (nonreq={sim_nonreq:.2f}, work={sim_work:.2f})",
                       similarity=sim_nonreq)

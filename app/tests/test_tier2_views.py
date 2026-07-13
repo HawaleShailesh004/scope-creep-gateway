@@ -22,7 +22,7 @@ def test_draft_reply_modal_has_tone_options():
 
 def test_draft_reply_result_modal_has_editable_reply_and_post():
     modal = build_draft_reply_result_modal(
-        reply_text="Thanks for the idea — let's scope this separately.",
+        reply_text="Thanks for the idea - let's scope this separately.",
         tone="neutral",
         channel_id="C1",
         thread_ts="123.456",

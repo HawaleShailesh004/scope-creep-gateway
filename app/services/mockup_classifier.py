@@ -42,7 +42,7 @@ def pick_classifiable_file(event: dict) -> dict | None:
 
 
 def is_mockup_work_request(event: dict) -> bool:
-    """Cost guard — only vision when the message looks like a work request."""
+    """Cost guard - only vision when the message looks like a work request."""
     text = extract_message_text(event)
     if meaningful_word_count(text) >= 3:
         return True

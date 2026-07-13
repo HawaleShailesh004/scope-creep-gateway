@@ -37,7 +37,7 @@ async def handle_app_home_opened(
         if event.get("tab") == "messages":
             await client.assistant_threads_setSuggestedPrompts(
                 channel_id=event["channel"],
-                title="Scope Creep Gateway",
+                title="ScopeGuard",
                 prompts=SUGGESTED_PROMPTS,
             )
             # TODO(agent-dm-messages-tab): handle app_context_changed once Bolt supports it

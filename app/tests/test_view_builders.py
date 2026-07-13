@@ -16,7 +16,7 @@ def test_build_app_home_view_default():
 
     assert view["type"] == "home"
     header = view["blocks"][0]["text"]["text"]
-    assert "Scope Creep Gateway" in header
+    assert "ScopeGuard" in header
 
     body = view["blocks"][1]["text"]["text"]
     assert "/setup-brief" in body

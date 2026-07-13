@@ -24,7 +24,7 @@ _LOADING_VIEW = {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": ":hourglass_flowing_sand: Drafting your message…",
+                "text": ":hourglass_flowing_sand: ScopeGuard is drafting your reply…",
             },
         }
     ],
@@ -79,7 +79,7 @@ async def handle_draft_reply_submission(
         .get("value", "neutral")
     )
 
-    # Must ack with update — plain ack() closes the modal and views.update → not_found.
+    # Must ack with update - plain ack() closes the modal and views.update → not_found.
     await ack(response_action="update", view=_LOADING_VIEW)
 
     error_view = {

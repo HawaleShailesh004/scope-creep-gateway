@@ -24,7 +24,7 @@ def save_project_canvas_id(project_id: str, canvas_id: str) -> None:
 
 
 def brief_canvas_title(project_name: str) -> str:
-    return f"Project Brief - {project_name}"
+    return f"Scope Health - {project_name}"
 
 
 def _parse_canvas_ids_from_search(text: str) -> list[str]:
@@ -88,7 +88,7 @@ async def _canvas_matches_project(
             return False
         payload = json.loads(content[0].get("text", "{}"))
         markdown = payload.get("markdown_content", "")
-        return project_name in markdown and "Project Brief" in markdown
+        return project_name in markdown and "Scope Health" in markdown
     except Exception as exc:
         logger.debug("Could not read canvas %s: %s", canvas_id, exc)
         return False
@@ -132,9 +132,15 @@ async def ensure_project_canvas_id(
             save_project_canvas_id(project_id, searched)
         return searched
 
-    if is_valid_canvas_id(stored_canvas_id) and await _canvas_matches_project(
-        user_token, stored_canvas_id, project_name
-    ):
+    if is_valid_canvas_id(stored_canvas_id):
+        if await _canvas_matches_project(user_token, stored_canvas_id, project_name):
+            return stored_canvas_id
+        # MCP read can flake; still prefer the stored id over failing the update.
+        logger.warning(
+            "Stored canvas %s for project %s failed content match; using it anyway",
+            stored_canvas_id,
+            project_id,
+        )
         return stored_canvas_id
 
     resolved = await resolve_canvas_id_from_channel(user_token, channel_id)

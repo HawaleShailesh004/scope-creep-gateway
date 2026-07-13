@@ -1,4 +1,4 @@
--- Scope Creep Gateway — full schema (Phase 1 + Tier 1 v2)
+-- ScopeGuard - full schema (Phase 1 + Tier 1 v2)
 -- Run in Supabase SQL Editor for fresh installs.
 
 -- projects: one row per client-freelancer project channel

@@ -23,12 +23,12 @@ async def handle_app_mentioned(
 
         if not cleaned_text:
             await say(
-                text="Gateway online",
+                text="Scope Health online",
                 thread_ts=thread_ts,
             )
             return
 
-        await say(text="Gateway online", thread_ts=thread_ts)
+        await say(text="Scope Health online", thread_ts=thread_ts)
 
     except Exception as e:
         logger.exception(f"Failed to handle app mention: {e}")

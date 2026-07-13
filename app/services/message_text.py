@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-# Classifier input — keep head + tail for long pasted specs.
+# Classifier input - keep head + tail for long pasted specs.
 MAX_CLASSIFIER_MESSAGE_CHARS = 4_000
 
 # Slack Block Kit section text limit is 3000; we stay under for quotes.

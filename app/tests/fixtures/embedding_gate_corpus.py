@@ -163,7 +163,7 @@ def build_corpus() -> list[CorpusEntry]:
         ("Can you also do Hindi language support?", "jewelry"),
         ("Add a wishlist feature for logged-in users", "jewelry"),
         ("thanks, can you also add dark mode", "jewelry"),
-        ("Looks great — can you add testimonials on the homepage?", "jewelry"),
+        ("Looks great - can you add testimonials on the homepage?", "jewelry"),
         ("One more round on the homepage please", "jewelry"),
         ("Please update the footer with our new address", "jewelry"),
         ("Could you change the font to something more premium?", "jewelry"),
@@ -202,7 +202,7 @@ def build_corpus() -> list[CorpusEntry]:
         ("Delete the placeholder images and use ours", "jewelry"),
         ("New page for store opening event next month", "jewelry"),
         ("Another version of the logo in monochrome please", "brand"),
-        ("Revise the business card — phone number changed", "brand"),
+        ("Revise the business card - phone number changed", "brand"),
         ("Redo the social templates with new colours", "brand"),
     ]
     for t, proj in explicit:
@@ -224,10 +224,10 @@ def build_corpus() -> list[CorpusEntry]:
     for t, proj in soft:
         entries.append(_e(t, "escalate", "soft_creep", safety_critical=True, project=proj))
 
-    # ---- DELIVERABLE STATUS / SCOPE QUESTIONS (escalate — need AI) ----
+    # ---- DELIVERABLE STATUS / SCOPE QUESTIONS (escalate - need AI) ----
     deliverable_q = [
         ("Is our story page designed?", "jewelry"),
-        ("What about the contact form — is that done?", "jewelry"),
+        ("What about the contact form - is that done?", "jewelry"),
         ("Any update on the mobile layout?", "jewelry"),
         ("Has the About page been started yet?", "jewelry"),
         ("Is the enquiry form working on mobile?", "jewelry"),
@@ -249,7 +249,7 @@ def build_corpus() -> list[CorpusEntry]:
     # ---- REVISION REQUESTS (escalate, safety critical) ----
     revisions = [
         "Can we try a different layout for the hero?",
-        "The blue feels too dark — lighter shade?",
+        "The blue feels too dark - lighter shade?",
         "Font looks a bit small on mobile",
         "Spacing between sections feels tight",
         "Can you move the CTA above the fold?",
@@ -257,21 +257,21 @@ def build_corpus() -> list[CorpusEntry]:
         "Product grid should be 3 columns not 4",
         "Navigation menu order should change",
         "Button colour doesn't match brand guide",
-        "Images are loading too slowly — optimize?",
+        "Images are loading too slowly - optimize?",
     ]
     for t in revisions:
         entries.append(_e(t, "escalate", "revision", safety_critical=True))
 
-    # ---- AMBIGUOUS (escalate to be safe — AI decides) ----
+    # ---- AMBIGUOUS (escalate to be safe - AI decides) ----
     ambiguous = [
         "Thoughts on the latest mockup?",
         "What do you think about option B?",
-        "See attached — let me know",
+        "See attached - let me know",
         "Compare these two approaches",
         "Which direction do you prefer?",
         "Flagging this for your review",
         "Not sure if this is in scope but sharing anyway",
-        "Our competitor has this feature — thoughts?",
+        "Our competitor has this feature - thoughts?",
     ]
     for t in ambiguous:
         entries.append(_e(t, "escalate", "ambiguous", safety_critical=False))
@@ -284,7 +284,7 @@ def build_corpus() -> list[CorpusEntry]:
         _e("ok", "skip", "edge_short_ack"),
         _e("dark mode too", "escalate", "edge_short_creep", safety_critical=True),
         _e("blog?", "escalate", "edge_short_creep", safety_critical=True),
-        _e("Thanks — when's the next milestone?", "skip", "ack_with_timing"),  # timing not request
+        _e("Thanks - when's the next milestone?", "skip", "ack_with_timing"),  # timing not request
         _e("Great! Can you share the staging link?", "escalate", "ack_with_ask", safety_critical=True),
     ]
     entries.extend(edges)
@@ -300,7 +300,7 @@ def build_corpus() -> list[CorpusEntry]:
         "Forwarding this to our marketing lead",
         "Looping in @sarah from our side",
         "Standup update: client is happy with direction",
-        "Quick note — board meeting went well",
+        "Quick note - board meeting went well",
         "Invoice received, thanks",
         "Payment sent via Razorpay",
         "Signed the SOW copy you sent",
@@ -308,7 +308,7 @@ def build_corpus() -> list[CorpusEntry]:
         "Out sick today, back tomorrow",
         "On a call, will reply later",
         "Reviewed the staging site on my phone",
-        "Showed it to the founder — big thumbs up",
+        "Showed it to the founder - big thumbs up",
         "We're presenting this to investors Friday",
         "Demo went really well yesterday",
     ]
@@ -321,7 +321,7 @@ def build_corpus() -> list[CorpusEntry]:
         _e("Push notification badge count is wrong", "escalate", "revision", safety_critical=True, project="mobile"),
         _e("Letterhead PDF export looks blurry", "escalate", "revision", safety_critical=True, project="brand"),
         _e("Dashboard load time is too slow", "escalate", "revision", safety_critical=True, project="saas"),
-        _e("Just saw the beta on TestFlight — awesome", "skip", "chatter", project="mobile"),
+        _e("Just saw the beta on TestFlight - awesome", "skip", "chatter", project="mobile"),
         _e("Brand guide colours look perfect in print", "skip", "chatter", project="brand"),
         _e("Analytics chart tooltips are confusing", "escalate", "revision", safety_critical=True, project="saas"),
         _e("Could you add Tamil language on the site?", "escalate", "explicit_request", safety_critical=True, project="jewelry"),
@@ -338,7 +338,7 @@ def expand_for_load_test(corpus: list[CorpusEntry], multiplier: int = 5) -> list
     if multiplier <= 1:
         return corpus
     out = list(corpus)
-    suffixes = ["", " — following up", " (async)", " today", " pls"]
+    suffixes = ["", " - following up", " (async)", " today", " pls"]
     for i in range(1, multiplier):
         for entry in corpus:
             suffix = suffixes[i % len(suffixes)]

@@ -4,13 +4,13 @@ from services.user_messages import APP_HOME_PRIVACY
 def build_app_home_view(
     install_url: str | None = None, is_connected: bool = False
 ) -> dict:
-    """Build the Scope Creep Gateway App Home view."""
+    """Build the ScopeGuard App Home view."""
     blocks = [
         {
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": ":shield: Scope Creep Gateway",
+                "text": ":shield: ScopeGuard",
             },
         },
         {
@@ -18,17 +18,17 @@ def build_app_home_view(
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    "Catch out-of-scope client requests *at the moment they happen* — "
+                    "Catch out-of-scope client requests *at the moment they happen* - "
                     "not at invoice time.\n\n"
                     "*In a project channel:*\n"
-                    "• `/setup-brief` — define deliverables, budget, and client\n"
-                    "• `/update-brief` — edit setup deliverables without a new channel\n"
-                    "• `/change-order` — bill for additional work manually\n"
-                    "• `/absorbed` — see goodwill work you've absorbed\n"
-                    "• `/client-report` — pattern stats across projects\n"
-                    "• `/studio-report` — studio capacity + billing summary\n"
-                    "• `/scope-gateway-off` / `/scope-gateway-on` — pause or resume\n"
-                    "• *Flag as scope change* — right-click any client message\n\n"
+                    "• `/setup-brief` - define deliverables, budget, and client\n"
+                    "• `/update-brief` - edit setup deliverables without a new channel\n"
+                    "• `/change-order` - bill for additional work manually\n"
+                    "• `/absorbed` - see goodwill work you've absorbed\n"
+                    "• `/client-report` - pattern stats across projects\n"
+                    "• `/studio-report` - studio capacity + billing summary\n"
+                    "• `/scope-gateway-off` / `/scope-gateway-on` - pause or resume\n"
+                    "• *Flag as scope change* - right-click any client message\n\n"
                     "Scope warnings are *private to the freelancer*. "
                     "Change orders and the Scope Health canvas are shared with the channel."
                 ),
@@ -63,7 +63,7 @@ def build_app_home_view(
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": ":large_green_circle: Slack MCP connected — canvas creation is enabled.",
+                        "text": ":large_green_circle: Slack MCP connected - canvas creation is enabled.",
                     }
                 ],
             }

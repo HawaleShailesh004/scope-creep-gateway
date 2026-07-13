@@ -1,12 +1,12 @@
 """
-scope_health.py — value- and timeline-weighted Scope Health.
+scope_health.py - value- and timeline-weighted Scope Health.
 
 Replaces the flat "-12 per change order" model. Health now reflects real scope
 pressure on the project:
 
     money added   (billed change orders vs original budget)
   + time added    (extra days vs the ORIGINAL project duration, not remaining)
-  + unbilled creep (absorbed goodwill work — the creep that actually costs the
+  + unbilled creep (absorbed goodwill work - the creep that actually costs the
                     freelancer, which the old formula ignored entirely)
 
 KEY DECISIONS (and why):
@@ -24,7 +24,7 @@ KEY DECISIONS (and why):
 3. Absorbed (let-it-slide) work counts against health, at a discount. Unbilled
    scope creep is arguably the WORST for the freelancer's economics, so a project
    where creep was absorbed is LESS healthy than one where it was billed. We
-   weight it at `absorbed_weight` (default 0.5) of its value — present, but not
+   weight it at `absorbed_weight` (default 0.5) of its value - present, but not
    dominant, because absorbing small goodwill is a legitimate choice.
 
 4. Committed vs projected. `status='paid'` (and optionally 'proposed') COs are
@@ -167,7 +167,7 @@ def _compute_for_statuses(
     elif have_budget and not have_time:
         basis = "budget_only"
     else:
-        # Nothing computable — fall back to a gentle count-based penalty so the
+        # Nothing computable - fall back to a gentle count-based penalty so the
         # number still reflects that scope changed.
         n = sum(1 for co in cos if co.status in statuses)
         fallback_penalty = min(

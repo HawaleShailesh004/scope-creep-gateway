@@ -25,7 +25,7 @@ def _format_when(raw: str | None) -> str:
         parsed = date.fromisoformat(raw[:10])
         return parsed.strftime("%b %d")
     except (ValueError, TypeError):
-        return raw[:10] if raw else "—"
+        return raw[:10] if raw else "-"
 
 
 def _summary(order: dict[str, Any]) -> str:

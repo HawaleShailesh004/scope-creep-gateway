@@ -1,0 +1,22 @@
+STATEMENT OF WORK
+Keystone Digital Studio × Acme Corp
+
+Project: Acme Corp - Website Redesign
+Client contact: Priya Sharma (Acme)
+Budget: $5,000
+Deadline: 2 weeks from kickoff
+Revision rounds included: 2
+
+In scope / deliverables:
+- Homepage redesign
+- About page
+- Contact page with form
+
+Out of scope / exclusions:
+- Blog section
+- E-commerce checkout
+- Ongoing content writing
+- Paid ads setup
+
+Notes:
+Kickoff via Slack. Scope changes require a written change order before work starts.

@@ -1,5 +1,5 @@
 """
-scope_canvas.py — builds and updates the project Scope Canvas markdown.
+scope_canvas.py - builds and updates the project Scope Canvas markdown.
 
 Canvas layout (top → bottom):
     1. Title + health status
@@ -70,7 +70,7 @@ def _bar(pct: float, width: int = 20) -> str:
 
 def _money(currency: str, amount: Optional[float]) -> str:
     if amount is None:
-        return "—"
+        return "-"
     sym = {"INR": "₹", "USD": "$", "EUR": "€", "GBP": "£"}.get(currency, "")
     if amount == int(amount):
         return f"{sym}{int(amount):,}"
@@ -98,7 +98,7 @@ def _bars_block(m: CanvasModel) -> str:
             f"{'+' if m.timeline_used_pct else ''}added vs plan"
         )
     if len(lines) == 2:
-        lines.append("_Budget and deadline not set — health uses change count._")
+        lines.append("_Budget and deadline not set - health uses change count._")
     return "\n".join(lines)
 
 
@@ -145,7 +145,7 @@ def _pending_block(m: CanvasModel) -> str:
         lines.append("|------|------|----------|")
         for p in m.pending:
             cost = _money(m.currency, p.cost)
-            days = f"+{p.days} days" if p.days else "—"
+            days = f"+{p.days} days" if p.days else "-"
             lines.append(f"| {p.summary} | {cost} | {days} |")
     else:
         lines.append("_Nothing pending._")
@@ -159,15 +159,15 @@ def _change_log_block(m: CanvasModel) -> str:
         lines.append("|------|--------|------|----------|--------|")
         for e in m.change_log:
             cost = _money(m.currency, e.cost)
-            days = f"+{e.days}d" if e.days else "—"
+            days = f"+{e.days}d" if e.days else "-"
             status = {
                 "paid": "✅ Agreed",
                 "proposed": "⏳ Pending",
-                "dismissed": "— Withdrawn",
+                "dismissed": "- Withdrawn",
             }.get(e.status, e.status)
             lines.append(f"| {e.when} | {e.summary} | {cost} | {days} | {status} |")
     else:
-        lines.append("_No changes yet — right on scope._")
+        lines.append("_No changes yet - right on scope._")
     return "\n".join(lines)
 
 
@@ -220,10 +220,10 @@ def section_markdown(m: CanvasModel, anchor: str) -> str:
 
 def change_log_row_markdown(e: ChangeLogEntry, currency: str) -> str:
     cost = _money(currency, e.cost)
-    days = f"+{e.days}d" if e.days else "—"
+    days = f"+{e.days}d" if e.days else "-"
     status = {
         "paid": "✅ Agreed",
         "proposed": "⏳ Pending",
-        "dismissed": "— Withdrawn",
+        "dismissed": "- Withdrawn",
     }.get(e.status, e.status)
     return f"| {e.when} | {e.summary} | {cost} | {days} | {status} |"

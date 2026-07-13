@@ -1,4 +1,4 @@
-"""CI safety tests for embedding gate — requires sentence-transformers."""
+"""CI safety tests for embedding gate - requires sentence-transformers."""
 from __future__ import annotations
 
 import pytest
@@ -45,7 +45,7 @@ def test_corpus_escalate_recall_on_requests(refs_cache):
 
 
 def test_skip_precision(refs_cache):
-    """Every SKIP must be a labeled skip message — no false skips."""
+    """Every SKIP must be a labeled skip message - no false skips."""
     cfg = GateConfig()
     corpus = build_corpus()
     by_text = {e.text: e for e in corpus}

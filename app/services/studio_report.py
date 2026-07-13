@@ -85,7 +85,7 @@ def _cleanest_project_label(freelancer_slack_id: str) -> str | None:
 def build_studio_weekly_summary(
     freelancer_slack_id: str,
     *,
-    studio_name: str = "Northlight Studio",
+    studio_name: str = "Keystone Digital Studio",
     currency: str = "INR",
 ) -> str:
     supabase = get_supabase()
@@ -114,12 +114,12 @@ def build_studio_weekly_summary(
         lumen_note = f"🚩 {heaviest} is your heaviest creeper this month."
     clean_note = ""
     if cleanest:
-        clean_note = f"🟢 {cleanest} is clean — right on scope."
+        clean_note = f"🟢 {cleanest} is clean - right on scope."
 
     worth_note = ""
     if cap["hours"] >= 6 and top_client:
         worth_note = (
-            f"Worth a look: absorbed hours are climbing — heaviest so far is {top_client}."
+            f"Worth a look: absorbed hours are climbing - heaviest so far is {top_client}."
         )
 
     billing_line = WEEKLY_BILLING_LINE.format(
@@ -134,7 +134,7 @@ def build_studio_weekly_summary(
         absorbed_hours=cap["hours"],
         absorbed_value=format_budget(cap["value"], currency),
         client_count=max(cap["client_count"], 1),
-        top_client=top_client or "—",
+        top_client=top_client or "-",
         billing_line=billing_line,
         heaviest_line=lumen_note,
         clean_line=clean_note,

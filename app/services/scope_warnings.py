@@ -133,7 +133,7 @@ def create_scope_flag(
         result = run_query(lambda sb: sb.table("change_orders").insert(row))
     except Exception as exc:
         # Unique index on (project_id, trigger_message_ts) rejects concurrent
-        # duplicates from Slack retries — return the existing flag instead.
+        # duplicates from Slack retries - return the existing flag instead.
         if _is_unique_violation(exc) and message_ts:
             existing = run_query(
                 lambda sb: sb.table("change_orders")

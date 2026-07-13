@@ -10,7 +10,7 @@ from services.revisions import (
     revision_limit_breached,
 )
 
-# Auto-absorb disabled for now — every out-of-scope ask surfaces the warning card
+# Auto-absorb disabled for now - every out-of-scope ask surfaces the warning card
 # so the freelancer chooses Let it slide vs bill. Re-enable trivial/small silent
 # absorb once demo testing is stable.
 AUTO_ABSORB_SIZES: frozenset[str] = frozenset()

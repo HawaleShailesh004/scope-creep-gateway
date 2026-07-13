@@ -119,7 +119,7 @@ def find_deliverable_by_description(
 
 
 def message_covered_by_deliverables(message: str, deliverables: list[str]) -> bool:
-    """Dedup helper only — not used to skip classification (classifier reads the brief)."""
+    """Dedup helper only - not used to skip classification (classifier reads the brief)."""
     msg_tokens = _content_tokens(message)
     if not msg_tokens:
         return False

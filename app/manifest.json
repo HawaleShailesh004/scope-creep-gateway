@@ -1,9 +1,9 @@
 {
   "display_information": {
-    "name": "Scope Creep Gateway",
+    "name": "ScopeGuard",
     "description": "Catch scope creep the moment it happens - and get paid for the extra work.",
     "background_color": "#000000",
-    "long_description": "Scope creep quietly costs freelancers thousands every year - one \"can you also just…\" at a time.\r\n\r\nScope Creep Gateway is your scope guardian inside Slack. It watches your client project channels, compares every request against the brief you agreed on, and quietly flags out-of-scope asks the moment they land - privately, so only you see them.\r\n\r\nYou stay in control of every call:\r\n\r\nLet small asks slide - and it keeps a running tally of the goodwill you've given, so you know when a client's \"quick favors\" have added up.\r\n\r\nBill the real ones - one tap drafts a professional change order with cost and timeline, ready to send.\r\n\r\nKnow your clients - see which clients creep most across all your projects, so you can price and plan accordingly.\r\n\r\nEverything sensitive stays private to you. The app discloses its presence openly in each channel, never shares your conversations, and never uses your data to train AI - so your client relationships stay built on trust, not surveillance.\r\n\r\nStop doing free work you never agreed to. Start every project with a guardian watching your scope."
+    "long_description": "Scope creep quietly costs freelancers thousands every year - one \"can you also just…\" at a time.\r\n\r\nScopeGuard is your scope guardian inside Slack. It watches your client project channels, compares every request against the brief you agreed on, and quietly flags out-of-scope asks the moment they land - privately, so only you see them.\r\n\r\nIn-channel, the bot appears as Scope Health - a softer face for clients - while freelancers get the full ScopeGuard workflow.\r\n\r\nYou stay in control of every call:\r\n\r\nLet small asks slide - and it keeps a running tally of the goodwill you've given, so you know when a client's \"quick favors\" have added up.\r\n\r\nBill the real ones - one tap drafts a professional change order with cost and timeline, ready to send.\r\n\r\nKnow your clients - see which clients creep most across all your projects, so you can price and plan accordingly.\r\n\r\nEverything sensitive stays private to you. The app discloses its presence openly in each channel, never shares your conversations, and never uses your data for model training - so your client relationships stay built on trust, not surveillance.\r\n\r\nStop doing free work you never agreed to. Start every project with ScopeGuard watching your scope."
   },
   "features": {
     "app_home": {
@@ -12,7 +12,7 @@
       "messages_tab_read_only_enabled": false
     },
     "bot_user": {
-      "display_name": "Scope Creep Gateway",
+      "display_name": "Scope Health",
       "always_online": true
     },
     "shortcuts": [
@@ -86,7 +86,7 @@
       }
     ],
     "agent_view": {
-      "agent_description": "A Slack agent that helps freelancers catch scope creep early.",
+      "agent_description": "ScopeGuard - a Slack agent that helps freelancers catch scope creep early.",
       "suggested_prompts": []
     }
   },
@@ -141,7 +141,6 @@
   },
   "settings": {
     "event_subscriptions": {
-      "request_url": "https://scope-creep-gateway-production.up.railway.app/slack/events",
       "bot_events": [
         "app_home_opened",
         "app_mention",
@@ -152,11 +151,10 @@
       ]
     },
     "interactivity": {
-      "is_enabled": true,
-      "request_url": "https://scope-creep-gateway-production.up.railway.app/slack/events"
+      "is_enabled": true
     },
     "org_deploy_enabled": true,
-    "socket_mode_enabled": false,
+    "socket_mode_enabled": true,
     "token_rotation_enabled": false,
     "is_mcp_enabled": true
   }

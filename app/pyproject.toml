@@ -1,5 +1,5 @@
 [project]
-name = "scope-creep-gateway"
+name = "scopeguard"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
@@ -20,7 +20,7 @@ test = [
     "pytest-asyncio==1.4.0",
 ]
 dev = [
-    "scope-creep-gateway[test]",
+    "scopeguard[test]",
     "ruff==0.15.20",
 ]
 

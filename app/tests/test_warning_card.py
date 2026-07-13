@@ -39,7 +39,7 @@ def test_build_warning_blocks_absorb_nudge():
         channel_id="C0BET8X49CZ",
         message_ts="1782998430.671389",
         project_id="p1",
-        absorb_nudge="_You've absorbed ₹3,500 from this client already — consider billing this one._",
+        absorb_nudge="_You've absorbed ₹3,500 from this client already - consider billing this one._",
     )
     assert "₹3,500" in blocks[0]["text"]["text"]
 

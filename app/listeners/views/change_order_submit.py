@@ -4,7 +4,11 @@ import logging
 
 from slack_sdk.web.async_client import AsyncWebClient
 
-from listeners.views.change_order_card import build_change_order_card_blocks
+from listeners.views.change_order_card import (
+    build_change_order_card_blocks,
+    build_client_payment_ephemeral_blocks,
+    build_freelancer_draft_ephemeral_blocks,
+)
 from listeners.views.change_order_modal import CALLBACK_ID
 from services.canvas_sync import refresh_project_canvas
 from services.change_orders import (
@@ -12,8 +16,12 @@ from services.change_orders import (
     get_change_order,
     update_change_order_proposed,
 )
-from services.operation_locks import LockKeys, operation_lock
 from services.ephemeral_updates import post_or_update_ephemeral
+from services.freelancer_client import (
+    post_client_facing_message,
+    update_client_facing_message,
+)
+from services.operation_locks import LockKeys, operation_lock
 from services.project_context import load_project_by_channel
 from services.user_messages import (
     CANVAS_UPDATE_FAILED,
@@ -151,13 +159,14 @@ async def handle_change_order_submission(
                 or "Additional work"
             )
 
-            post_kwargs: dict = {
-                "channel": channel_id,
-                "text": f"Change Order #{order_number} - {title}",
-            }
-            if thread_ts:
-                post_kwargs["thread_ts"] = thread_ts
-            posted = await client.chat_postMessage(**post_kwargs)
+            team_id = body.get("team", {}).get("id")
+            posted = await post_client_facing_message(
+                client,
+                channel=channel_id,
+                text=f"Change Order #{order_number} - {title}",
+                thread_ts=thread_ts,
+                team_id=team_id,
+            )
             message_ts = posted["ts"]
 
             blocks = build_change_order_card_blocks(
@@ -173,13 +182,48 @@ async def handle_change_order_submission(
                 message_ts=message_ts,
                 thread_ts=thread_ts or message_ts,
                 project_id=project_id,
+                include_payment=False,
+                include_draft_reply=False,
             )
-            await client.chat_update(
+            await update_client_facing_message(
+                client,
                 channel=channel_id,
                 ts=message_ts,
                 text=f"Change Order #{order_number} - {title}",
                 blocks=blocks,
+                team_id=team_id,
             )
+
+            client_slack_id = project.get("client_slack_id")
+            if client_slack_id:
+                await client.chat_postEphemeral(
+                    channel=channel_id,
+                    user=client_slack_id,
+                    text=f"Change Order #{order_number} — payment options",
+                    blocks=build_client_payment_ephemeral_blocks(
+                        order_number=order_number,
+                        title=title,
+                        change_order_id=change_order_id,
+                        channel_id=channel_id,
+                        message_ts=message_ts,
+                        thread_ts=thread_ts or message_ts,
+                    ),
+                )
+
+            freelancer_id = project.get("freelancer_slack_id")
+            if freelancer_id:
+                await client.chat_postEphemeral(
+                    channel=channel_id,
+                    user=freelancer_id,
+                    text=f"Change Order #{order_number} posted",
+                    blocks=build_freelancer_draft_ephemeral_blocks(
+                        order_number=order_number,
+                        change_order_id=change_order_id,
+                        channel_id=channel_id,
+                        project_id=project_id,
+                        thread_ts=thread_ts or message_ts,
+                    ),
+                )
 
             scope_health, canvas_updated = await refresh_project_canvas(
                 channel_id, project_id

@@ -197,7 +197,7 @@ async def handle_open_extracted_brief(
     respond: Respond,
     logger: logging.Logger,
 ):
-    """Legacy fallback — opens manual form (draft cache path)."""
+    """Legacy fallback - opens manual form (draft cache path)."""
     payload = _parse_action_value(body)
     channel_id = payload["channel_id"]
     team_id = payload["team_id"]

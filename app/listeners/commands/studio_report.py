@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 
 from slack_bolt.async_app import AsyncApp
 from slack_sdk.web.async_client import AsyncWebClient
@@ -62,12 +63,18 @@ async def handle_show_studio_report(
     await ack()
     channel_id = json.loads(body["actions"][0]["value"])["ch"]
     user_id = body["user"]["id"]
-    studio_name = body.get("team", {}).get("domain") or "Northlight Studio"
+    studio_name = (
+        os.environ.get("STUDIO_NAME")
+        or body.get("team", {}).get("domain")
+        or "Keystone Digital Studio"
+    )
+    if studio_name == body.get("team", {}).get("domain"):
+        studio_name = studio_name.replace("-", " ").title()
 
     summary = await asyncio.to_thread(
         build_studio_weekly_summary,
         user_id,
-        studio_name=studio_name.replace("-", " ").title(),
+        studio_name=studio_name,
     )
 
     await client.chat_postEphemeral(

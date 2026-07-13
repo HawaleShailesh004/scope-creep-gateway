@@ -37,7 +37,7 @@ def build_draft_reply_modal(
                     "type": "mrkdwn",
                     "text": (
                         "Pick a tone. We'll draft a client-facing message you can "
-                        "edit and post — *nothing is sent until you click Post*."
+                        "edit and post - *nothing is sent until you click Post*."
                     ),
                 },
             },
@@ -83,7 +83,7 @@ def build_draft_reply_result_modal(
     trimmed = reply_text[:_MAX_REPLY_CHARS]
     truncated_note = ""
     if len(reply_text) > _MAX_REPLY_CHARS:
-        truncated_note = "\n\n_(Draft was trimmed to fit — finish editing in the field below.)_"
+        truncated_note = "\n\n_(Draft was trimmed to fit - finish editing in the field below.)_"
 
     return {
         "type": "modal",
@@ -105,7 +105,7 @@ def build_draft_reply_result_modal(
                 "text": {
                     "type": "mrkdwn",
                     "text": (
-                        f"*Tone: {tone.title()}* — edit the message below, "
+                        f"*Tone: {tone.title()}* - edit the message below, "
                         f"then post when you're happy with it.{truncated_note}"
                     ),
                 },

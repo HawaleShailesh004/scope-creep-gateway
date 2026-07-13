@@ -6,7 +6,7 @@ import os
 from typing import Literal
 
 from services.canvas_model import build_canvas_model
-from services.canvas_resolver import ensure_project_canvas_id
+from services.canvas_resolver import brief_canvas_title, ensure_project_canvas_id
 from services.canvas_updater import push_canvas_update
 from services.change_orders import (
     compute_project_scope_health,
@@ -62,7 +62,7 @@ async def refresh_project_canvas(
 
     user_token = os.environ.get("SLACK_USER_TOKEN")
     if not user_token:
-        logger.warning("Skipping canvas update — SLACK_USER_TOKEN is not set")
+        logger.warning("Skipping canvas update - SLACK_USER_TOKEN is not set")
         return scope_health, False
 
     canvas_id = await ensure_project_canvas_id(
@@ -74,17 +74,17 @@ async def refresh_project_canvas(
     )
     if not canvas_id:
         logger.warning(
-            "Skipping canvas update — could not resolve canvas id for channel %s",
+            "Skipping canvas update - could not resolve canvas id for channel %s",
             channel_id,
         )
         return scope_health, False
 
-    title = f"Project Brief — {project['project_name']}"
+    title = brief_canvas_title(project["project_name"])
 
     async with operation_lock(LockKeys.canvas(project_id)) as acquired:
         if not acquired:
             logger.warning(
-                "Canvas update skipped — lock held for project %s", project_id
+                "Canvas update skipped - lock held for project %s", project_id
             )
             return scope_health, False
 

@@ -12,7 +12,7 @@ from db.supabase_client import get_supabase
 from listeners.views.setup_brief_launcher import build_setup_brief_launcher_blocks
 from listeners.views.setup_brief_modal import CALLBACK_ID
 from services.brief_template import build_canvas_markdown, parse_deliverables
-from services.canvas_resolver import save_project_canvas_id
+from services.canvas_resolver import save_project_canvas_id, brief_canvas_title
 from services.clients import resolve_client
 from services.deliverables import save_exclusions
 from services.embedding_cache import refresh_embedding_refs
@@ -337,7 +337,7 @@ async def handle_setup_brief_submission(
 
             canvas_id = await create_channel_canvas(
                 user_token,
-                title=f"Project Brief - {project_name}",
+                title=brief_canvas_title(project_name),
                 content=canvas_markdown,
                 channel_id=channel_id,
             )

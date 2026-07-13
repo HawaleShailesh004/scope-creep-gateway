@@ -14,15 +14,15 @@ REPLY_SYSTEM = REPLY_PROMPT_VERSIONS["v3"]
 
 TONE_GUIDANCE = {
     "warm": (
-        "Warm and collaborative — acknowledge the client's idea, explain scope gently, "
+        "Warm and collaborative - acknowledge the client's idea, explain scope gently, "
         "and invite a conversation about a change order."
     ),
     "neutral": (
-        "Professional and clear — state what's in scope, what isn't, and the path to add "
+        "Professional and clear - state what's in scope, what isn't, and the path to add "
         "the work without sounding harsh."
     ),
     "firm": (
-        "Direct but respectful — name that this is outside the agreed brief and that "
+        "Direct but respectful - name that this is outside the agreed brief and that "
         "additional work requires a change order before starting."
     ),
 }
@@ -77,10 +77,10 @@ INDICATIVE CHANGE ORDER (if billing):
 - Cost: {cost_line}
 - Timeline: {days_line}
 
-TONE: {tone} — {TONE_GUIDANCE[tone]}
+TONE: {tone} - {TONE_GUIDANCE[tone]}
 
 Write a short message the freelancer can copy-paste to the client (2-4 sentences).
-Do not mention AI, bots, or Scope Creep Gateway.
+Do not mention AI, bots, ScopeGuard, or Scope Health.
 Use {currency} when citing money.
 Return only the message text, no quotes or labels."""
 

@@ -1,16 +1,19 @@
-# Scope Creep Gateway — Architecture
+# ScopeGuard - Architecture
 
 This document describes how the Slack app is structured: message flow, data model, key modules, and reliability patterns.
 
 **Codebase:** `app/`  
 **Run:** `python app.py` from `app/` with `.env` configured  
-**Tests:** 108 unit tests (`pytest tests/ -q`)
+**Tests:** 108 unit tests (`pytest tests/ -q`)  
+**Judge brief:** [docs/FOR_JUDGES.md](./docs/FOR_JUDGES.md) · diagram: [docs/architecture.svg](./docs/architecture.svg)
+
+![ScopeGuard architecture](./docs/architecture.svg)
 
 ---
 
 ## 1. System overview
 
-Scope Creep Gateway is a Bolt for Python app for **freelancer–client project channels**. It:
+ScopeGuard is a Bolt for Python app for **freelancer–client project channels**. It:
 
 1. Captures an agreed project brief and creates a **Scope Health** canvas
 2. **Ambiently listens** to client messages and classifies them against the brief
@@ -42,12 +45,12 @@ Slack channel message (Events API)
         ▼              Vision classification
   Embedding gate (local, Stage 1 regex + Stage 2 embeddings)
         │
-        ├── SKIP ──► no AI call, no action
+        ├── SKIP ──► no classifier call, no action
         │
         └── ESCALATE
                 │
                 ▼
-        AI classifier (IN_SCOPE / OUT_OF_SCOPE / AMBIGUOUS
+        Scope classifier (IN_SCOPE / OUT_OF_SCOPE / AMBIGUOUS
                        + size / value / revision)
                 │
                 ▼
@@ -61,7 +64,7 @@ Slack channel message (Events API)
         Ephemeral warning card (freelancer only)
                 │
                 ▼
-        Change order flow → AI draft → edit modal → public thread card
+        Change order flow → ScopeGuard draft → edit modal → public thread card
                 │
                 ▼
         Supabase update + Canvas full rebuild + optional payment link
@@ -69,29 +72,40 @@ Slack channel message (Events API)
 
 ### Why three Slack primitives
 
-| Primitive | Role |
-| --------- | ---- |
-| **Events API** | Real-time listening in project channels |
-| **Canvas API / MCP** | Scope-of-record document (brief + health scorecard) |
-| **RTS (`assistant.search.context`)** | “Already raised on {date}” enrichment on warnings |
+| Primitive                            | Role                                                |
+| ------------------------------------ | --------------------------------------------------- |
+| **Events API**                       | Real-time listening in project channels             |
+| **Canvas API / MCP**                 | Scope-of-record document (brief + health scorecard) |
+| **RTS (`assistant.search.context`)** | “Already raised on {date}” enrichment on warnings   |
 
 ---
 
 ## 3. Technology stack
 
-| Layer | Technology | Role |
-| ----- | ---------- | ---- |
-| Runtime | Bolt + Socket Mode | Events, modals, Block Kit |
-| Pre-filter | `embedding_gate.py` + `prefilter.py` | Skip non-requests locally (~5–15 ms) |
-| Brain | Anthropic API (`classifier.py`, `change_order_drafter.py`, `reply_drafter.py`, `brief_extractor.py`) | Scope detection, CO drafting, brief import |
-| Data | Supabase (Postgres) | Source of truth |
-| Canvas create | Slack MCP (`slack_mcp.py`) | Initial brief canvas on setup |
-| Canvas update | Web API `canvases.edit` (`slack_canvas.py`, `canvas_updater.py`) | Full document replace on every sync |
-| History | RTS (`rts_search.py`) | Prior mention search in channel |
+| Layer         | Technology                                                                                | Role                                      |
+| ------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Runtime       | Bolt + Socket Mode                                                                        | Events, modals, Block Kit                 |
+| Pre-filter    | `embedding_gate.py` + `prefilter.py` + MiniLM embeddings                                  | Skip non-requests locally (~5–15 ms)      |
+| Brain         | **Groq · Llama 3.3 70B** (`classifier.py`, `change_order_drafter.py`, `reply_drafter.py`) | Scope detection, CO drafting, reply draft |
+| Brief import  | Anthropic vision/text extractors (`brief_extractor.py`, `scope_extractor.py`) where used  | SOW / chat → setup modal prefills         |
+| Data          | Supabase (Postgres)                                                                       | Source of truth                           |
+| Canvas create | Slack MCP (`slack_mcp.py`)                                                                | Initial Scope Health canvas on setup      |
+| Canvas update | Web API `canvases.edit` (`slack_canvas.py`, `canvas_updater.py`)                          | Full document replace on every sync       |
+| History       | RTS (`rts_search.py`)                                                                     | Prior mention search in channel           |
+
+### Classifier / drafter evolution
+
+| Version       | Stack                               | Why                                                                            |
+| ------------- | ----------------------------------- | ------------------------------------------------------------------------------ |
+| v1            | Anthropic Claude Sonnet             | Strong baseline; higher latency/cost for ambient classify                      |
+| v2–v3 prompts | Same family, tighter scope rules    | Edge cases (“discussed but not in brief”)                                      |
+| **Current**   | **Groq Llama 3.3 70B** + v3 prompts | Fast enough for live Slack warnings; benchmarked for classify + CO/reply draft |
+
+User-facing product copy never names providers or models - only this architecture doc and `.env` do.
 
 ### Embedding gate safety invariant
 
-The gate returns only `SKIP` or `ESCALATE` — never a scope verdict. A wrong skip means ignoring chatter, not missing creep. When in doubt, escalate. If the local model fails to load, Stage 2 is disabled and unsure messages always escalate.
+The gate returns only `SKIP` or `ESCALATE` - never a scope verdict. A wrong skip means ignoring chatter, not missing creep. When in doubt, escalate. If the local model fails to load, Stage 2 is disabled and unsure messages always escalate.
 
 ---
 
@@ -99,14 +113,14 @@ The gate returns only `SKIP` or `ESCALATE` — never a scope verdict. A wrong sk
 
 Schema: `app/db/schema.sql` + `app/db/migrations/002_tier1_v2.sql`
 
-| Table | Purpose |
-| ----- | ------- |
-| `projects` | One row per channel: freelancer, client, budget, deadline, `canvas_id`, `scope_health`, `disclosure_ts`, `retention_days`, `classification_enabled` |
-| `clients` | Cross-project client identity (freelancer + client Slack pair) |
-| `deliverables` | In-scope items from setup, `/update-brief`, or paid change orders |
-| `change_orders` | Flags + proposed/paid COs; size, estimated value, client_id, origin |
-| `absorbed_items` | Let-it-slide and auto-absorbed work |
-| `revisions` | Revision round tracking per deliverable |
+| Table            | Purpose                                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `projects`       | One row per channel: freelancer, client, budget, deadline, `canvas_id`, `scope_health`, `disclosure_ts`, `retention_days`, `classification_enabled` |
+| `clients`        | Cross-project client identity (freelancer + client Slack pair)                                                                                      |
+| `deliverables`   | In-scope items from setup, `/update-brief`, or paid change orders                                                                                   |
+| `change_orders`  | Flags + proposed/paid COs; size, estimated value, client_id, origin                                                                                 |
+| `absorbed_items` | Let-it-slide and auto-absorbed work                                                                                                                 |
+| `revisions`      | Revision round tracking per deliverable                                                                                                             |
 
 **Change order statuses:** `flagged` → `proposed` → `paid` (or `dismissed`)
 
@@ -118,7 +132,7 @@ Schema: `app/db/schema.sql` + `app/db/migrations/002_tier1_v2.sql`
 
 ## 5. Feature modules
 
-### 5.1 Project setup — `/setup-brief`
+### 5.1 Project setup - `/setup-brief`
 
 **Files:** `listeners/commands/setup_brief.py`, `setup_brief_buttons.py`, `setup_brief_modal.py`
 
@@ -126,13 +140,13 @@ Schema: `app/db/schema.sql` + `app/db/migrations/002_tier1_v2.sql`
 2. On submit: insert `projects` + `deliverables`, create canvas via MCP, post disclosure
 3. Guards: one brief per channel, setup lock, client ≠ freelancer
 
-### 5.2 Brief import — `/import-brief`
+### 5.2 Brief import - `/import-brief`
 
 **Files:** `import_brief_flow.py`, `brief_extractor.py`, `listeners/commands/import_brief.py`
 
-Extracts deliverables and metadata from pasted SOW/brief text via AI, then opens the setup modal prefilled.
+Extracts deliverables and metadata from a SOW/brief document, then opens the setup modal prefilled.
 
-### 5.3 Living brief — `/update-brief`
+### 5.3 Living brief - `/update-brief`
 
 **Files:** `brief_update.py`, `update_brief_*.py`
 
@@ -156,7 +170,7 @@ Edits scope in place, preserves change-order deliverables, refreshes canvas.
 **Entry points:** warning button, `/change-order`, message shortcut **Flag as scope change**
 
 1. Loading modal within 3s (`views.open` before heavy work)
-2. AI drafts task, cost, timeline
+2. ScopeGuard drafts task, cost, timeline
 3. Freelancer edits → post to channel
 4. Canvas refreshed; scope health updated
 
@@ -164,7 +178,7 @@ Edits scope in place, preserves change-order deliverables, refreshes canvas.
 
 **Files:** `scope_canvas.py`, `canvas_model.py`, `canvas_sync.py`, `canvas_updater.py`, `slack_canvas.py`
 
-- Full document replace on every sync (incremental section edits disabled — caused duplicate blocks)
+- Full document replace on every sync (incremental section edits disabled - caused duplicate blocks)
 - Sections: health score, budget/time bars, in-scope list, added & agreed, pending CO table, change log
 
 ### 5.7 Trust and retention
@@ -177,10 +191,11 @@ Edits scope in place, preserves change-order deliverables, refreshes canvas.
 
 ### 5.8 Payments (stub)
 
-**Files:** `payment_buttons.py`, `change_order_card.py`
+**Files:** `payment_buttons.py`, `change_order_card.py`, `freelancer_client.py`
 
-- **Approve & Pay:** Stripe payment link URL
-- **Simulate payment:** demo mode only, freelancer-only
+- Public CO card: details only (“Awaiting client approval”)
+- **Approve & Pay** / **Simulate payment:** client-only ephemeral (designated `client_slack_id`)
+- Card message updates use the freelancer user token (CO was posted as the freelancer)
 - No Stripe webhook — real payments do not auto-update Slack
 
 ---
@@ -191,14 +206,14 @@ Edits scope in place, preserves change-order deliverables, refreshes canvas.
 
 In-memory TTL locks (120s default):
 
-| Key | Purpose |
-| --- | ------- |
-| `setup:{channel}` | One setup at a time |
-| `canvas:{project_id}` | Canvas sync serialization |
-| `bootstrap:{channel}:{user}` | CO bootstrap |
-| `draft:{change_order_id}` | Generate CO button |
-| `change_order_submit:{id}` | Modal submit |
-| `pay:{id}` | Simulate payment |
+| Key                          | Purpose                   |
+| ---------------------------- | ------------------------- |
+| `setup:{channel}`            | One setup at a time       |
+| `canvas:{project_id}`        | Canvas sync serialization |
+| `bootstrap:{channel}:{user}` | CO bootstrap              |
+| `draft:{change_order_id}`    | Generate CO button        |
+| `change_order_submit:{id}`   | Modal submit              |
+| `pay:{id}`                   | Simulate payment          |
 
 ### Modal timing (`slack_modals.py`)
 
@@ -216,7 +231,7 @@ All user-facing strings centralized for consistent tone.
 
 ## 7. Configuration
 
-See `app/.env.sample`. Required: Slack bot + app tokens, user token, Supabase, Anthropic.
+See `app/.env.sample`. Required: Slack bot + app tokens, user token, Supabase, and Groq (`GROQ_API_KEY`). Optional Anthropic key if brief/document extractors are enabled.
 
 **Manifest scopes:** chat, commands, history, files (mockup vision), canvas, RTS. MCP enabled for canvas create.
 
@@ -224,19 +239,19 @@ See `app/.env.sample`. Required: Slack bot + app tokens, user token, Supabase, A
 
 ## 8. File map
 
-| Area | Key files |
-| ---- | --------- |
-| Entry | `app.py`, `listeners/__init__.py` |
-| Setup | `commands/setup_brief.py`, `views/setup_brief_*.py` |
-| Import/update brief | `import_brief_flow.py`, `brief_update.py`, `brief_extractor.py` |
-| Classify | `events/message.py`, `classifier.py`, `classifier_router.py`, `embedding_gate.py` |
-| Trust | `projects.py`, `retention.py`, `events/member_joined.py` |
-| Warnings | `scope_warnings.py`, `warning_card.py`, `scope_creep_buttons.py` |
-| Change orders | `change_order_flow.py`, `change_order_drafter.py`, `views/change_order_*.py` |
-| Canvas | `scope_canvas.py`, `canvas_sync.py`, `slack_canvas.py`, `slack_mcp.py` |
-| Health | `scope_health.py`, `change_orders.py` |
-| Data | `db/schema.sql`, `db/supabase_client.py`, `project_context.py` |
-| Copy | `user_messages.py` |
+| Area                | Key files                                                                         |
+| ------------------- | --------------------------------------------------------------------------------- |
+| Entry               | `app.py`, `listeners/__init__.py`                                                 |
+| Setup               | `commands/setup_brief.py`, `views/setup_brief_*.py`                               |
+| Import/update brief | `import_brief_flow.py`, `brief_update.py`, `brief_extractor.py`                   |
+| Classify            | `events/message.py`, `classifier.py`, `classifier_router.py`, `embedding_gate.py` |
+| Trust               | `projects.py`, `retention.py`, `events/member_joined.py`                          |
+| Warnings            | `scope_warnings.py`, `warning_card.py`, `scope_creep_buttons.py`                  |
+| Change orders       | `change_order_flow.py`, `change_order_drafter.py`, `views/change_order_*.py`      |
+| Canvas              | `scope_canvas.py`, `canvas_sync.py`, `slack_canvas.py`, `slack_mcp.py`            |
+| Health              | `scope_health.py`, `change_orders.py`                                             |
+| Data                | `db/schema.sql`, `db/supabase_client.py`, `project_context.py`                    |
+| Copy                | `user_messages.py`                                                                |
 
 ---
 
@@ -250,21 +265,21 @@ No automated E2E against live Slack.
 
 ## 10. Known limitations
 
-| Area | Status |
-| ---- | ------ |
-| Stripe webhook | Not built — simulate or manual |
-| Multi-instance | In-memory locks only |
-| Supabase RLS | Open (dev) |
-| Image-only requests | Skipped unless mockup classifier applies |
-| Multiple clients per channel | One `client_slack_id` only |
-| Production deploy | Local Socket Mode — HTTP/OAuth via `app_oauth.py` |
+| Area                         | Status                                            |
+| ---------------------------- | ------------------------------------------------- |
+| Stripe webhook               | Not built - simulate or manual                    |
+| Multi-instance               | In-memory locks only                              |
+| Supabase RLS                 | Open (dev)                                        |
+| Image-only requests          | Skipped unless mockup classifier applies          |
+| Multiple clients per channel | One `client_slack_id` only                        |
+| Production deploy            | Local Socket Mode - HTTP/OAuth via `app_oauth.py` |
 
 ---
 
 ## 11. End-to-end happy path
 
 1. Freelancer runs `/setup-brief` → canvas at Scope Health 100%
-2. Client: *“can you also add a blog section while you're at it?”*
+2. Client: _“can you also add a blog section while you're at it?”_
 3. Freelancer sees private warning
 4. **Generate Change Order** → edit cost/timeline → **Post to channel**
 5. Client sees thread card → approve/pay (or simulate in demo)

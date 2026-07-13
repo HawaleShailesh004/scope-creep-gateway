@@ -13,9 +13,10 @@ from services.change_orders import (
     mark_change_order_paid,
 )
 from services.deliverables import ensure_deliverable_for_paid_order
+from services.freelancer_client import freelancer_client
 from services.operation_locks import LockKeys, operation_lock
 from services.project_context import load_project_by_channel
-from services.user_messages import CHANGE_ORDER_CANNOT_PAY, SIMULATE_PAYMENT_FREELANCER_ONLY
+from services.user_messages import CHANGE_ORDER_CANNOT_PAY, SIMULATE_PAYMENT_CLIENT_ONLY
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,16 @@ async def _render_paid_card(
     await refresh_project_canvas(channel_id, project_id)
 
 
+async def _update_client_for_message(
+    bot_client: AsyncWebClient,
+    *,
+    team_id: str | None,
+) -> AsyncWebClient:
+    """COs post as the freelancer; only that token can chat.update them."""
+    user_client = freelancer_client(team_id=team_id)
+    return user_client or bot_client
+
+
 async def handle_simulate_payment(
     ack: Ack,
     body: dict,
@@ -82,6 +93,8 @@ async def handle_simulate_payment(
         message_ts = payload["msg_ts"]
         thread_ts = payload.get("thread_ts", message_ts)
         user_id = body.get("user", {}).get("id")
+        team_id = body.get("team", {}).get("id")
+        update_client = await _update_client_for_message(client, team_id=team_id)
 
         async with operation_lock(LockKeys.payment(change_order_id)) as acquired:
             if not acquired:
@@ -104,11 +117,11 @@ async def handle_simulate_payment(
             project = context["project"]
             project_id = project["id"]
 
-            if user_id and user_id != project.get("freelancer_slack_id"):
+            if user_id and user_id != project.get("client_slack_id"):
                 await client.chat_postEphemeral(
                     channel=channel_id,
                     user=user_id,
-                    text=SIMULATE_PAYMENT_FREELANCER_ONLY,
+                    text=SIMULATE_PAYMENT_CLIENT_ONLY,
                 )
                 return
 
@@ -117,7 +130,7 @@ async def handle_simulate_payment(
                     ensure_deliverable_for_paid_order, change_order
                 )
                 await _render_paid_card(
-                    client,
+                    update_client,
                     change_order=change_order,
                     change_order_id=change_order_id,
                     channel_id=channel_id,
@@ -148,7 +161,7 @@ async def handle_simulate_payment(
                         ensure_deliverable_for_paid_order, refreshed
                     )
                     await _render_paid_card(
-                        client,
+                        update_client,
                         change_order=refreshed,
                         change_order_id=change_order_id,
                         channel_id=channel_id,
@@ -162,7 +175,7 @@ async def handle_simulate_payment(
             change_order = paid
             await asyncio.to_thread(ensure_deliverable_for_paid_order, change_order)
             await _render_paid_card(
-                client,
+                update_client,
                 change_order=change_order,
                 change_order_id=change_order_id,
                 channel_id=channel_id,
