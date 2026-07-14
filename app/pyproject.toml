@@ -21,7 +21,7 @@ test = [
 ]
 dev = [
     "scopeguard[test]",
-    "ruff==0.15.20",
+    "ruff==0.15.21",
 ]
 
 [tool.setuptools.packages.find]
